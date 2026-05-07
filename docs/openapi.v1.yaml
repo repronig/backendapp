@@ -1,0 +1,1004 @@
+openapi: 3.1.0
+info:
+  title: REPRONIG Digital Rights Management API
+  version: 1.0.0
+  description: |
+    Initial contract-first OpenAPI definition for `/api/v1`.
+    This spec intentionally starts with core public/auth/member-self endpoints
+    and can be expanded module-by-module.
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Local development
+tags:
+  - name: Auth
+  - name: Public
+  - name: Me
+paths:
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessAuthSessionResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+  /auth/two-factor/verify:
+    post:
+      tags: [Auth]
+      summary: Complete login with two-factor challenge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TwoFactorVerifyRequest"
+      responses:
+        "200":
+          description: Two-factor verification successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessAuthSessionResponse"
+        "401":
+          description: Invalid or expired challenge/code
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+  /associations:
+    get:
+      tags: [Public]
+      summary: List public associations
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
+      responses:
+        "200":
+          description: Associations retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedAssociationsResponse"
+  /locations/states:
+    get:
+      tags: [Public]
+      summary: List states
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
+      responses:
+        "200":
+          description: States retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedStatesResponse"
+  /locations/states/{stateId}/cities:
+    get:
+      tags: [Public]
+      summary: List cities for a state
+      parameters:
+        - name: stateId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
+      responses:
+        "200":
+          description: Cities retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedCitiesResponse"
+  /languages:
+    get:
+      tags: [Public]
+      summary: List active languages
+      responses:
+        "200":
+          description: Languages retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessLanguagesResponse"
+  /platform-settings:
+    get:
+      tags: [Public]
+      summary: Fetch public platform settings
+      responses:
+        "200":
+          description: Platform settings retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessPlatformSettingsResponse"
+  /me:
+    get:
+      tags: [Me]
+      summary: Get current user context
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Current user context
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessCurrentUserResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /me/notifications:
+    get:
+      tags: [Me]
+      summary: List current user notifications
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
+        - name: unread
+          in: query
+          required: false
+          schema:
+            type: boolean
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Notifications retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedNotificationsResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /me/dashboard-summary:
+    get:
+      tags: [Me]
+      summary: Get dashboard summary for current user
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Dashboard summary retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessDashboardSummaryResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /member-applications/me:
+    get:
+      tags: [Me]
+      summary: Get current member application workspace
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Member application retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessMemberApplicationResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /works:
+    get:
+      tags: [Me]
+      summary: List current member works
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Works retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedWorksResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /works/{workId}:
+    get:
+      tags: [Me]
+      summary: Get a work by id for current member
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: workId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Work retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessWorkResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /institution/licences:
+    get:
+      tags: [Me]
+      summary: List licences for current institution user
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
+      responses:
+        "200":
+          description: Licences retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedInstitutionLicencesResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /institution/invoices:
+    get:
+      tags: [Me]
+      summary: List invoices for current institution user
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Invoices retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedInstitutionInvoicesResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /institution/invoices/{invoiceId}:
+    get:
+      tags: [Me]
+      summary: Get invoice detail for current institution user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: invoiceId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Invoice retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessInstitutionInvoiceResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /institution/licences/{licenceId}/payments:
+    get:
+      tags: [Me]
+      summary: List payments for a licence
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: licenceId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Licence payments retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessInstitutionPaymentsResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/dashboard/summary:
+    get:
+      tags: [Me]
+      summary: Get admin dashboard summary
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Admin dashboard summary retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessAdminDashboardSummaryResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/member-applications:
+    get:
+      tags: [Me]
+      summary: List member applications for admin review
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: association_id
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Member applications retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedAdminMemberApplicationsResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /super/dashboard/summary:
+    get:
+      tags: [Me]
+      summary: Get super-admin dashboard summary
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Super admin dashboard summary retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessSuperDashboardSummaryResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /super/integrations/outbox/summary:
+    get:
+      tags: [Me]
+      summary: Get integration outbox summary
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Integration outbox summary retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessIntegrationOutboxSummaryResponse"
+  /super/integrations/outbox:
+    get:
+      tags: [Me]
+      summary: List integration outbox entries
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: provider
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Integration outbox retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedIntegrationOutboxEntriesResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Sanctum
+  parameters:
+    Page:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+    PerPage:
+      name: per_page
+      in: query
+      required: false
+      schema:
+        type: integer
+        enum: [10, 20, 50, 100]
+  schemas:
+    MessageOnly:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+    ErrorResponse:
+      allOf:
+        - $ref: "#/components/schemas/MessageOnly"
+    ValidationErrorResponse:
+      allOf:
+        - $ref: "#/components/schemas/MessageOnly"
+        - type: object
+          required: [errors]
+          properties:
+            errors:
+              type: object
+              additionalProperties:
+                type: array
+                items:
+                  type: string
+    PaginationMeta:
+      type: object
+      required: [current_page, per_page, total, last_page, from, to]
+      properties:
+        current_page: { type: integer }
+        per_page: { type: integer }
+        total: { type: integer }
+        last_page: { type: integer }
+        from: { type: integer, nullable: true }
+        to: { type: integer, nullable: true }
+    PaginationLinks:
+      type: object
+      required: [first, last, prev, next]
+      properties:
+        first: { type: string, nullable: true }
+        last: { type: string, nullable: true }
+        prev: { type: string, nullable: true }
+        next: { type: string, nullable: true }
+    User:
+      type: object
+      required: [id, name, email]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string, format: email }
+    AuthSession:
+      type: object
+      properties:
+        token: { type: string, nullable: true }
+        token_type: { type: string, example: Bearer }
+        user:
+          $ref: "#/components/schemas/User"
+        two_factor_required: { type: boolean }
+        challenge_id: { type: integer, nullable: true }
+        expires_at: { type: string, format: date-time, nullable: true }
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+    TwoFactorVerifyRequest:
+      type: object
+      required: [challenge_id, code]
+      properties:
+        challenge_id: { type: integer }
+        code:
+          type: string
+          pattern: "^[0-9]{6}$"
+    SuccessAuthSessionResponse:
+      type: object
+      required: [message, data]
+      properties:
+        message: { type: string }
+        data:
+          $ref: "#/components/schemas/AuthSession"
+    Association:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+    State:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+    City:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+    Notification:
+      type: object
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        message: { type: string, nullable: true }
+        category: { type: string, nullable: true }
+        severity: { type: string }
+        read_at: { type: string, format: date-time, nullable: true }
+        action_url: { type: string, nullable: true }
+        created_at: { type: string, format: date-time, nullable: true }
+    SuccessLanguagesResponse:
+      type: object
+      required: [message, data]
+      properties:
+        message: { type: string }
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: integer }
+              code: { type: string }
+              name: { type: string }
+    SuccessPlatformSettingsResponse:
+      type: object
+      required: [message, data]
+      properties:
+        message: { type: string }
+        data:
+          type: object
+    SuccessCurrentUserResponse:
+      type: object
+      required: [message, data]
+      properties:
+        message: { type: string }
+        data:
+          type: object
+    SuccessDashboardSummaryResponse:
+      type: object
+      required: [message, data]
+      properties:
+        message: { type: string }
+        data:
+          type: object
+          properties:
+            meta:
+              type: object
+            member:
+              type: object
+    MemberApplication:
+      type: object
+      properties:
+        id: { type: integer }
+        applicant_type: { type: string }
+        application_status: { type: string }
+        submission_stage: { type: string, nullable: true }
+    SuccessMemberApplicationResponse:
+      type: object
+      required: [message, data]
+      properties:
+        message: { type: string }
+        data:
+          anyOf:
+            - $ref: "#/components/schemas/MemberApplication"
+            - type: "null"
+    WorkSummary:
+      type: object
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        work_status: { type: string }
+        verification_status: { type: string, nullable: true }
+    WorkDetail:
+      allOf:
+        - $ref: "#/components/schemas/WorkSummary"
+        - type: object
+          properties:
+            contributors:
+              type: array
+              items:
+                type: object
+            files:
+              type: array
+              items:
+                type: object
+    SuccessWorkResponse:
+      type: object
+      required: [message, data]
+      properties:
+        message: { type: string }
+        data:
+          $ref: "#/components/schemas/WorkDetail"
+    InstitutionLicenceSummary:
+      type: object
+      properties:
+        id: { type: integer }
+        licence_number: { type: string, nullable: true }
+        licence_status: { type: string, nullable: true }
+        payment_status: { type: string, nullable: true }
+        outstanding_amount: { type: number, nullable: true }
+    InstitutionInvoiceSummary:
+      type: object
+      properties:
+        id: { type: integer }
+        invoice_number: { type: string, nullable: true }
+        status: { type: string, nullable: true }
+        total_amount: { type: number, nullable: true }
+        outstanding_amount: { type: number, nullable: true }
+    InstitutionInvoiceDetail:
+      allOf:
+        - $ref: "#/components/schemas/InstitutionInvoiceSummary"
+        - type: object
+          properties:
+            billing_year: { type: integer, nullable: true }
+            issue_date: { type: string, format: date, nullable: true }
+            due_date: { type: string, format: date, nullable: true }
+            payments:
+              type: array
+              items:
+                type: object
+    InstitutionPaymentSummary:
+      type: object
+      properties:
+        id: { type: integer }
+        payment_reference: { type: string, nullable: true }
+        gateway_name: { type: string, nullable: true }
+        payment_status: { type: string, nullable: true }
+        amount: { type: number, nullable: true }
+        paid_at: { type: string, format: date-time, nullable: true }
+    SuccessInstitutionInvoiceResponse:
+      type: object
+      required: [message, data]
+      properties:
+        message: { type: string }
+        data:
+          $ref: "#/components/schemas/InstitutionInvoiceDetail"
+    SuccessInstitutionPaymentsResponse:
+      type: object
+      required: [message, data]
+      properties:
+        message: { type: string }
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/InstitutionPaymentSummary"
+    AdminMemberApplicationSummary:
+      type: object
+      properties:
+        id: { type: integer }
+        applicant_type: { type: string, nullable: true }
+        application_status: { type: string, nullable: true }
+        submission_stage: { type: string, nullable: true }
+    SuccessAdminDashboardSummaryResponse:
+      type: object
+      required: [message, data]
+      properties:
+        message: { type: string }
+        data:
+          type: object
+          properties:
+            meta: { type: object }
+            users: { type: object }
+            recent_activity:
+              type: array
+              items:
+                type: object
+    SuccessSuperDashboardSummaryResponse:
+      type: object
+      required: [message, data]
+      properties:
+        message: { type: string }
+        data:
+          type: object
+          properties:
+            meta: { type: object }
+            users: { type: object }
+            associations: { type: object }
+            organizations: { type: object }
+            members: { type: object }
+            invoices: { type: object }
+            payments: { type: object }
+            roles: { type: object }
+            revenue: { type: object }
+            recent_activity:
+              type: array
+              items:
+                type: object
+    IntegrationOutboxSummary:
+      type: object
+      properties:
+        pending_total: { type: integer }
+        processing_total: { type: integer }
+        failed_last_24h: { type: integer }
+        oldest_pending_created_at: { type: string, format: date-time, nullable: true }
+        oldest_pending_scheduled_at: { type: string, format: date-time, nullable: true }
+    SuccessIntegrationOutboxSummaryResponse:
+      type: object
+      required: [message, data]
+      properties:
+        message: { type: string }
+        data:
+          $ref: "#/components/schemas/IntegrationOutboxSummary"
+    IntegrationOutboxEntry:
+      type: object
+      properties:
+        id: { type: integer }
+        provider: { type: string }
+        operation: { type: string }
+        status: { type: string }
+        attempts: { type: integer }
+        scheduled_at: { type: string, format: date-time, nullable: true }
+    PaginatedAssociationsResponse:
+      type: object
+      required: [message, data, meta, links]
+      properties:
+        message: { type: string }
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Association"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+        links:
+          $ref: "#/components/schemas/PaginationLinks"
+    PaginatedStatesResponse:
+      type: object
+      required: [message, data, meta, links]
+      properties:
+        message: { type: string }
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/State"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+        links:
+          $ref: "#/components/schemas/PaginationLinks"
+    PaginatedCitiesResponse:
+      type: object
+      required: [message, data, meta, links]
+      properties:
+        message: { type: string }
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/City"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+        links:
+          $ref: "#/components/schemas/PaginationLinks"
+    PaginatedNotificationsResponse:
+      type: object
+      required: [message, data, meta, links]
+      properties:
+        message: { type: string }
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Notification"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+        links:
+          $ref: "#/components/schemas/PaginationLinks"
+    PaginatedWorksResponse:
+      type: object
+      required: [message, data, meta, links]
+      properties:
+        message: { type: string }
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkSummary"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+        links:
+          $ref: "#/components/schemas/PaginationLinks"
+    PaginatedInstitutionLicencesResponse:
+      type: object
+      required: [message, data, meta, links]
+      properties:
+        message: { type: string }
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/InstitutionLicenceSummary"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+        links:
+          $ref: "#/components/schemas/PaginationLinks"
+    PaginatedInstitutionInvoicesResponse:
+      type: object
+      required: [message, data, meta, links]
+      properties:
+        message: { type: string }
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/InstitutionInvoiceSummary"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+        links:
+          $ref: "#/components/schemas/PaginationLinks"
+    PaginatedAdminMemberApplicationsResponse:
+      type: object
+      required: [message, data, meta, links]
+      properties:
+        message: { type: string }
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminMemberApplicationSummary"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+        links:
+          $ref: "#/components/schemas/PaginationLinks"
+    PaginatedIntegrationOutboxEntriesResponse:
+      type: object
+      required: [message, data, meta, links]
+      properties:
+        message: { type: string }
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/IntegrationOutboxEntry"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+        links:
+          $ref: "#/components/schemas/PaginationLinks"

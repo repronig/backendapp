@@ -1,0 +1,46 @@
+# Environment
+.env
+.env.*
+!.env.example
+
+# Laravel storage
+/storage/*.key
+/storage/app/*
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+
+# Vendor
+/vendor/
+
+# Node (if present)
+/node_modules/
+
+# Build / cache
+/public/build
+/public/hot
+/bootstrap/cache/*.php
+
+# IDE / OS
+/.idea
+/.vscode
+.DS_Store
+Thumbs.db
+
+# Testing
+/phpunit.xml
+
+# Debug / tools
+/.phpunit.result.cache
+/.php_cs.cache
+
+# Logs
+*.log
+
+# Docker (if any)
+docker-compose.override.yml
+
+# Misc
+npm-debug.log
+yarn-error.log

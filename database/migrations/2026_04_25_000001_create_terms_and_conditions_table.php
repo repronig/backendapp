@@ -1,0 +1,29 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('terms_and_conditions', function (Blueprint $table) {
+            $table->id();
+            $table->string('title');
+            $table->string('version', 50)->default('1.0');
+            $table->string('audience', 30)->default('all')->index();
+            $table->longText('content');
+            $table->boolean('is_active')->default(false)->index();
+            $table->timestamp('published_at')->nullable();
+            $table->foreignId('created_by_user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('updated_by_user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('terms_and_conditions');
+    }
+};

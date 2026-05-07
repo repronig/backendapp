@@ -1,0 +1,35 @@
+name: Deploy Backend API
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+
+jobs:
+  deploy:
+    name: Deploy Backend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Deploy staging
+        if: github.ref == 'refs/heads/staging'
+        run: |
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+          "cd /var/www/repronig-api-staging && ./deploy.sh"
+
+      - name: Deploy production
+        if: github.ref == 'refs/heads/main'
+        run: |
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+          "cd /var/www/repronig-api-production && ./deploy.sh"
