@@ -1,0 +1,43 @@
+name: Deploy API
+
+on:
+  push:
+    branches: [main, staging]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-api-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Select environment script
+      id: target
+      run: |
+        if [ "${GITHUB_REF_NAME}" = "main" ]; then
+          echo "script=/usr/local/bin/repronig/deploy_api_production.sh" >> "$GITHUB_OUTPUT"
+          echo "env_name=production" >> "$GITHUB_OUTPUT"
+        elif [ "${GITHUB_REF_NAME}" = "staging" ]; then
+          echo "script=/usr/local/bin/repronig/deploy_api_staging.sh" >> "$GITHUB_OUTPUT"
+          echo "env_name=staging" >> "$GITHUB_OUTPUT"
+        else
+          echo "Unsupported branch: ${GITHUB_REF_NAME}"
+          exit 1
+        fi
+
+      - name: Deploy over SSH
+      uses: appleboy/ssh-action@v1.2.0
+      with:
+        host: ${{ secrets.DROPLET_HOST }}
+        username: ${{ secrets.DROPLET_USER }}
+        key: ${{ secrets.DROPLET_SSH_KEY }}
+        port: ${{ secrets.DROPLET_PORT }}
+        script_stop: true
+        script: |
+          set -euo pipefail
+          echo "Deploying ${GITHUB_REF_NAME} to ${{ steps.target.outputs.env_name }}"
+          bash "${{ steps.target.outputs.script }}"
+          echo "Deployment complete"
