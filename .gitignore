@@ -29,7 +29,7 @@
 Thumbs.db
 
 # Testing
-/phpunit.xml
+/.phpunit.cache
 
 # Debug / tools
 /.phpunit.result.cache
