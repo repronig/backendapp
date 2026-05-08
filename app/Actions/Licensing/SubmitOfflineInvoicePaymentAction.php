@@ -69,7 +69,7 @@ class SubmitOfflineInvoicePaymentAction
         $proofOriginalName = $receipt->getClientOriginalName();
         $proofMimeType = $receipt->getMimeType();
 
-        return DB::transaction(function () use ($invoice, $licence, $actor, $amount, $paidInFull, $institutionNote, $path, $proofOriginalName, $proofMimeType, $ipAddress, $userAgent): LicencePayment {
+        return DB::transaction(function () use ($invoice, $licence, $actor, $amount, $paidInFull, $institutionNote, $path, $proofOriginalName, $proofMimeType, $disk, $ipAddress, $userAgent): LicencePayment {
             $paymentReference = $this->referenceCodeGenerator->generatePaymentReference();
 
             $payment = LicencePayment::create([
