@@ -26,9 +26,9 @@ class DemoUsersSeeder extends Seeder
             $association_npa = Association::query()->where('code', 'NPA')->firstOrFail();
 
             $officer_npa = User::query()->updateOrCreate(
-                ['email' => 'info@npa.com'],
+                ['email' => 'info@npa.org'],
                 [
-                    'first_name' => 'Ngozi',
+                    'first_name' => 'Adewale',
                     'last_name' => 'Adeyemi',
                     'phone' => '+2348000000011',
                     'password' => Hash::make('NPA@2026!rep'),
@@ -47,15 +47,15 @@ class DemoUsersSeeder extends Seeder
             ]);
 
 
-            //ANA
-            $association_ana = Association::query()->where('code', 'ana')->firstOrFail();
+            // ANA — must match `AssociationsSeeder` / DB `associations.code` (PostgreSQL is case-sensitive)
+            $association_ana = Association::query()->where('code', 'ANA')->firstOrFail();
 
             $officer_ana = User::query()->updateOrCreate(
-                ['email' => 'info@ana.com'],
+                ['email' => 'info@ana.org'],
                 [
                     'first_name' => 'Ngozi',
-                    'last_name' => 'Adeyemi',
-                    'phone' => '+2348000000011',
+                    'last_name' => 'Chima',
+                    'phone' => '+2348000000012',
                     'password' => Hash::make('ANA@2026!rep'),
                     'account_type' => 'association_officer',
                     'status' => 'active',
@@ -71,15 +71,15 @@ class DemoUsersSeeder extends Seeder
                 ],
             ]);
 
-            //ANFAAN
-            $association_anfaan = Association::query()->where('code', 'anfaan')->firstOrFail();
+            // ANFAAN
+            $association_anfaan = Association::query()->where('code', 'ANFAAN')->firstOrFail();
 
             $officer_anfaan = User::query()->updateOrCreate(
-                ['email' => 'info@anfaan.com'],
+                ['email' => 'info@anfaan.org'],
                 [
-                    'first_name' => 'Ngozi',
-                    'last_name' => 'Adeyemi',
-                    'phone' => '+2348000000011',
+                    'first_name' => 'Gbenga',
+                    'last_name' => 'Kolawole',
+                    'phone' => '+2348000000013',
                     'password' => Hash::make('ANFAAN@2026!rep'),
                     'account_type' => 'association_officer',
                     'status' => 'active',
@@ -96,15 +96,15 @@ class DemoUsersSeeder extends Seeder
             ]);
 
 
-            //SNA
-            $association_sna = Association::query()->where('code', 'sna')->firstOrFail();
+            // SNA
+            $association_sna = Association::query()->where('code', 'SNA')->firstOrFail();
 
             $officer_sna = User::query()->updateOrCreate(
-                ['email' => 'info@sna.com'],
+                ['email' => 'info@sna.org'],
                 [
-                    'first_name' => 'Ngozi',
-                    'last_name' => 'Adeyemi',
-                    'phone' => '+2348000000011',
+                    'first_name' => 'Noah',
+                    'last_name' => 'Adetayo',
+                    'phone' => '+2348000000014',
                     'password' => Hash::make('SNA@2026!rep'),
                     'account_type' => 'association_officer',
                     'status' => 'active',
