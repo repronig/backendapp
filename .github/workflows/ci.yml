@@ -24,7 +24,8 @@ jobs:
         with:
           # Match composer.json require ("php": "^8.3") for consistent CI/runtime parity.
           php-version: '8.3'
-          extensions: mbstring, xml, sqlite3, pdo_sqlite, bcmath, ctype, curl, dom, fileinfo, intl, json, openssl, tokenizer, zip
+          # gd: required by Dompdf image paths (PDF tests) and aligns with spatie/medialibrary default image_driver.
+          extensions: mbstring, xml, sqlite3, pdo_sqlite, bcmath, ctype, curl, dom, fileinfo, intl, json, openssl, tokenizer, zip, gd
           coverage: none
 
       - name: Install Composer dependencies
@@ -42,4 +43,8 @@ jobs:
         run: chmod -R 775 storage bootstrap/cache || true
 
       - name: Run Pest
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'
         run: ./vendor/bin/pest --colors=never
