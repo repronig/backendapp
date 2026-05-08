@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\MediaLibrary\HasMedia;
@@ -128,6 +129,16 @@ class User extends Authenticatable implements HasMedia, MustVerifyEmail
 
     public function getAvatarUrlAttribute(): ?string
     {
+        $disk = (string) config('media-library.disk_name', config('filesystems.default', 'local'));
+
+        if (filled($this->avatar_path)) {
+            try {
+                return Storage::disk($disk)->url($this->avatar_path);
+            } catch (\Throwable) {
+                // Fall back to existing public/media resolution when S3 URL generation is unavailable.
+            }
+        }
+
         return PublicAssetUrl::publicStorageUrl($this->avatar_path) ?: PublicAssetUrl::fromMedia($this->getFirstMedia('avatar'));
     }
 

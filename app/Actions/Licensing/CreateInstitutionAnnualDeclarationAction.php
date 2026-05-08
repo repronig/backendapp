@@ -65,9 +65,10 @@ class CreateInstitutionAnnualDeclarationAction
 
             if (($data['supporting_document'] ?? null) instanceof UploadedFile) {
                 $file = $data['supporting_document'];
+                $disk = (string) config('filesystems.default', 'local');
                 $payload += [
-                    'supporting_document_path' => $file->store('declarations', 'public'),
-                    'supporting_document_disk' => 'public',
+                    'supporting_document_path' => $file->store('declarations', $disk),
+                    'supporting_document_disk' => $disk,
                     'supporting_document_name' => $file->getClientOriginalName(),
                     'supporting_document_mime_type' => $file->getClientMimeType(),
                     'supporting_document_size' => $file->getSize(),

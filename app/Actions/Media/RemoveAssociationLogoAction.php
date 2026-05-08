@@ -23,10 +23,11 @@ class RemoveAssociationLogoAction
     ): Association {
         return DB::transaction(function () use ($association, $actor, $ipAddress, $userAgent) {
             $before = $association->toArray();
+            $disk = (string) config('media-library.disk_name', config('filesystems.default', 'local'));
 
             $association->clearMediaCollection('logo');
             if (filled($association->logo_path)) {
-                Storage::disk('public')->delete($association->logo_path);
+                Storage::disk($disk)->delete($association->logo_path);
                 $association->forceFill(['logo_path' => null])->save();
             }
 

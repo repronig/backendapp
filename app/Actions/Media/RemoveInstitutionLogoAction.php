@@ -23,10 +23,11 @@ class RemoveInstitutionLogoAction
     ): Institution {
         return DB::transaction(function () use ($institution, $actor, $ipAddress, $userAgent) {
             $before = $institution->toArray();
+            $disk = (string) config('media-library.disk_name', config('filesystems.default', 'local'));
 
             $institution->clearMediaCollection('logo');
             if (filled($institution->logo_path)) {
-                Storage::disk('public')->delete($institution->logo_path);
+                Storage::disk($disk)->delete($institution->logo_path);
                 $institution->forceFill(['logo_path' => null])->save();
             }
 

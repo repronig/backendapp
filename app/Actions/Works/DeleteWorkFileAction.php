@@ -16,11 +16,12 @@ class DeleteWorkFileAction
 
     public function execute(
         WorkFile $file,
-        string $disk = 'public',
+        ?string $disk = null,
         ?User $actor = null,
         ?string $ipAddress = null,
         ?string $userAgent = null
     ): void {
+        $disk ??= (string) config('filesystems.default', 'local');
         $before = $file->toArray();
 
         Storage::disk($disk)->delete($file->file_path);

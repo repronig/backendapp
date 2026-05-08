@@ -24,7 +24,7 @@ class InstitutionDocumentController extends BaseApiController
             $request->file('file'),
             $request->string('document_type')->value(),
             $request->user(),
-            'public',
+            (string) config('filesystems.default', 'local'),
             $request->ip(),
             $request->userAgent()
         );

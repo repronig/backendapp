@@ -26,7 +26,7 @@ class WorkFileController extends BaseApiController
             $request->file('file'),
             $request->string('file_type')->value(),
             $request->user(),
-            'public',
+            (string) config('filesystems.default', 'local'),
             $request->ip(),
             $request->userAgent()
         );
@@ -48,7 +48,7 @@ class WorkFileController extends BaseApiController
 
         $action->execute(
             $file,
-            'public',
+            (string) config('filesystems.default', 'local'),
             $request->user(),
             $request->ip(),
             $request->userAgent()

@@ -25,7 +25,7 @@ class MemberApplicationDocumentController extends BaseApiController
             $request->file('file'),
             $request->string('document_type')->value(),
             $request->user(),
-            'public',
+            (string) config('filesystems.default', 'local'),
             $request->ip(),
             $request->userAgent()
         );
@@ -43,7 +43,7 @@ class MemberApplicationDocumentController extends BaseApiController
         $this->authorize('update', $memberApplication);
         $this->authorize('delete', $document);
 
-        Storage::disk('public')->delete($document->file_path);
+        Storage::disk((string) config('filesystems.default', 'local'))->delete($document->file_path);
         $document->delete();
 
         return $this->success('Document deleted successfully.');

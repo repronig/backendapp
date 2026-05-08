@@ -25,7 +25,7 @@ class UploadDocumentAction
         ?string $userAgent = null,
     ): Document {
         return DB::transaction(function () use ($documentable, $file, $data, $actor, $ipAddress, $userAgent): Document {
-            $disk = 'public';
+            $disk = (string) config('filesystems.default', 'local');
             $category = strtolower((string) ($data['category'] ?? ''));
             $documentType = strtolower((string) ($data['document_type'] ?? ''));
             $folder = str_contains($category, 'declaration') || str_contains($documentType, 'declaration') ? 'declarations' : 'documents';

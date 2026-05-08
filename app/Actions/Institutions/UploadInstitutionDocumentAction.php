@@ -20,10 +20,11 @@ class UploadInstitutionDocumentAction
         UploadedFile $file,
         string $documentType,
         User $uploadedBy,
-        string $disk = 'public',
+        ?string $disk = null,
         ?string $ipAddress = null,
         ?string $userAgent = null
     ): InstitutionDocument {
+        $disk ??= (string) config('filesystems.default', 'local');
         $path = $file->store('documents', $disk);
 
         $document = InstitutionDocument::create([

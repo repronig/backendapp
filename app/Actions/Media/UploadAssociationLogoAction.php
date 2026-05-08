@@ -9,18 +9,24 @@ use Illuminate\Support\Str;
 
 class UploadAssociationLogoAction
 {
+    private function uploadDisk(): string
+    {
+        return (string) config('media-library.disk_name', config('filesystems.default', 'local'));
+    }
+
     public function execute(Model $model, UploadedFile $file): Model
     {
+        $disk = $this->uploadDisk();
         $model->clearMediaCollection('logo');
 
         if (filled($model->logo_path ?? null)) {
-            Storage::disk('public')->delete($model->logo_path);
+            Storage::disk($disk)->delete($model->logo_path);
         }
 
         $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension() ?: 'jpg');
         $fileName = sprintf('association-logo-%s-%s.%s', $model->getKey() ?: 'new', Str::random(12), $extension);
-        $path = $file->storeAs('logos', $fileName, 'public');
-        Storage::disk('public')->setVisibility($path, 'public');
+        $path = $file->storeAs('logos', $fileName, $disk);
+        Storage::disk($disk)->setVisibility($path, 'public');
 
         $model->forceFill(['logo_path' => $path])->save();
 

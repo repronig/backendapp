@@ -20,10 +20,11 @@ class UploadWorkFileAction
         UploadedFile $file,
         string $fileType,
         User $uploadedBy,
-        string $disk = 'public',
+        ?string $disk = null,
         ?string $ipAddress = null,
         ?string $userAgent = null
     ): WorkFile {
+        $disk ??= (string) config('filesystems.default', 'local');
         $path = $file->store('works', $disk);
 
         $workFile = WorkFile::create([

@@ -22,9 +22,10 @@ class DeleteWorkAction
         $before = $work->toArray();
 
         $work->loadMissing('files');
+        $disk = (string) config('filesystems.default', 'local');
         foreach ($work->files as $file) {
             if ($file->file_path) {
-                Storage::disk('public')->delete($file->file_path);
+                Storage::disk($disk)->delete($file->file_path);
             }
         }
 

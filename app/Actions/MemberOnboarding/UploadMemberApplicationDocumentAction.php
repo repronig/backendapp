@@ -21,10 +21,11 @@ class UploadMemberApplicationDocumentAction
         UploadedFile $file,
         string $documentType,
         User $uploadedBy,
-        string $disk = 'public',
+        ?string $disk = null,
         ?string $ipAddress = null,
         ?string $userAgent = null
     ): MemberApplicationDocument {
+        $disk ??= (string) config('filesystems.default', 'local');
         $existing = $memberApplication->documents()
             ->where('document_type', $documentType)
             ->latest('id')

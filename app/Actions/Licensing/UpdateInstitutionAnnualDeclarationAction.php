@@ -68,14 +68,15 @@ class UpdateInstitutionAnnualDeclarationAction
             }
 
             if (($data['supporting_document'] ?? null) instanceof UploadedFile) {
+                $defaultDisk = (string) config('filesystems.default', 'local');
                 if ($declaration->supporting_document_path) {
-                    Storage::disk($declaration->supporting_document_disk ?: 'public')->delete($declaration->supporting_document_path);
+                    Storage::disk($declaration->supporting_document_disk ?: $defaultDisk)->delete($declaration->supporting_document_path);
                 }
 
                 $file = $data['supporting_document'];
                 $payload += [
-                    'supporting_document_path' => $file->store('declarations', 'public'),
-                    'supporting_document_disk' => 'public',
+                    'supporting_document_path' => $file->store('declarations', $defaultDisk),
+                    'supporting_document_disk' => $defaultDisk,
                     'supporting_document_name' => $file->getClientOriginalName(),
                     'supporting_document_mime_type' => $file->getClientMimeType(),
                     'supporting_document_size' => $file->getSize(),

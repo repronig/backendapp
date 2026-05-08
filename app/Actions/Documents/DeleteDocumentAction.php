@@ -24,7 +24,8 @@ class DeleteDocumentAction
             $before = $document->toArray();
 
             if (filled($document->file_path)) {
-                Storage::disk($document->storage_disk ?: 'public')->delete($document->file_path);
+                $defaultDisk = (string) config('filesystems.default', 'local');
+                Storage::disk($document->storage_disk ?: $defaultDisk)->delete($document->file_path);
             }
 
             $document->clearMediaCollection('file');

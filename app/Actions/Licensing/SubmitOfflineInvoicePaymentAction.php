@@ -64,7 +64,8 @@ class SubmitOfflineInvoicePaymentAction
         }
 
         $licence = $invoice->licence;
-        $path = $receipt->store('offline-payments/'.$invoice->id, 'local');
+        $disk = (string) config('filesystems.default', 'local');
+        $path = $receipt->store('offline-payments/'.$invoice->id, $disk);
         $proofOriginalName = $receipt->getClientOriginalName();
         $proofMimeType = $receipt->getMimeType();
 
@@ -88,7 +89,7 @@ class SubmitOfflineInvoicePaymentAction
                     'offline' => [
                         'paid_in_full' => $paidInFull,
                         'institution_note' => $institutionNote,
-                        'proof_disk' => 'local',
+                        'proof_disk' => $disk,
                         'proof_disk_path' => $path,
                         'proof_original_name' => $proofOriginalName,
                         'proof_mime_type' => $proofMimeType,

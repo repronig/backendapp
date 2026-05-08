@@ -18,7 +18,8 @@ class AvatarController extends BaseApiController
         $user->clearMediaCollection('avatar');
 
         if (filled($user->avatar_path)) {
-            Storage::disk('public')->delete($user->avatar_path);
+            Storage::disk((string) config('media-library.disk_name', config('filesystems.default', 'local')))
+                ->delete($user->avatar_path);
             $user->forceFill(['avatar_path' => null])->save();
         }
 
