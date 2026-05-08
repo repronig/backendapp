@@ -28,16 +28,29 @@ jobs:
             exit 1
           fi
 
+      - name: Verify deploy secrets
+        run: |
+          missing=""
+          [ -z "${{ secrets.DROPLET_HOST }}" ] && missing="${missing} DROPLET_HOST"
+          [ -z "${{ secrets.DROPLET_USER }}" ] && missing="${missing} DROPLET_USER"
+          [ -z "${{ secrets.DROPLET_SSH_KEY }}" ] && missing="${missing} DROPLET_SSH_KEY"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing GitHub secrets (set in repo Settings → Secrets):${missing}"
+            exit 1
+          fi
+          echo "Deploy secrets present."
+
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.DROPLET_HOST }}
           username: ${{ secrets.DROPLET_USER }}
           key: ${{ secrets.DROPLET_SSH_KEY }}
-          port: ${{ secrets.DROPLET_PORT }}
+          # DROPLET_PORT optional; default 22 when unset.
+          port: ${{ secrets.DROPLET_PORT || '22' }}
           script_stop: true
           script: |
             set -euo pipefail
-            echo "Deploying ${GITHUB_REF_NAME} to ${{ steps.target.outputs.env_name }}"
+            echo "Deploying ${{ github.ref_name }} to ${{ steps.target.outputs.env_name }}"
             bash "${{ steps.target.outputs.script }}"
             echo "Deployment complete"
