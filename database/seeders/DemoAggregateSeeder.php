@@ -10,7 +10,7 @@ class DemoAggregateSeeder extends Seeder
     {
         $this->call([
             DemoUsersSeeder::class,
-            DemoDataSeeder::class, 
+            //DemoDataSeeder::class, 
         ]); 
     }
 }

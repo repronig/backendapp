@@ -22,24 +22,99 @@ class DemoUsersSeeder extends Seeder
     {
         DB::transaction(function (): void {
 
-            $association = Association::query()->where('code', 'NPA')->firstOrFail();
+            //NPA
+            $association_npa = Association::query()->where('code', 'NPA')->firstOrFail();
 
-            $officer = User::query()->updateOrCreate(
+            $officer_npa = User::query()->updateOrCreate(
                 ['email' => 'info@npa.com'],
                 [
                     'first_name' => 'Ngozi',
                     'last_name' => 'Adeyemi',
                     'phone' => '+2348000000011',
-                    'password' => Hash::make('Password123!'),
+                    'password' => Hash::make('NPA@2026!rep'),
                     'account_type' => 'association_officer',
                     'status' => 'active',
                     'email_verified_at' => now(),
                 ]
             );
-            $officer->syncRoles(['association_officer']);
+            $officer_npa->syncRoles(['association_officer']);
 
-            $association->users()->syncWithoutDetaching([
-                $officer->id => [
+            $association_npa->users()->syncWithoutDetaching([
+                $officer_npa->id => [
+                    'designation_title' => 'Secretary',
+                    'is_active' => true,
+                ],
+            ]);
+
+
+            //ANA
+            $association_ana = Association::query()->where('code', 'ana')->firstOrFail();
+
+            $officer_ana = User::query()->updateOrCreate(
+                ['email' => 'info@ana.com'],
+                [
+                    'first_name' => 'Ngozi',
+                    'last_name' => 'Adeyemi',
+                    'phone' => '+2348000000011',
+                    'password' => Hash::make('ANA@2026!rep'),
+                    'account_type' => 'association_officer',
+                    'status' => 'active',
+                    'email_verified_at' => now(),
+                ]
+            );
+            $officer_ana->syncRoles(['association_officer']);
+
+            $association_ana->users()->syncWithoutDetaching([
+                $officer_ana->id => [
+                    'designation_title' => 'Secretary',
+                    'is_active' => true,
+                ],
+            ]);
+
+            //ANFAAN
+            $association_anfaan = Association::query()->where('code', 'anfaan')->firstOrFail();
+
+            $officer_anfaan = User::query()->updateOrCreate(
+                ['email' => 'info@anfaan.com'],
+                [
+                    'first_name' => 'Ngozi',
+                    'last_name' => 'Adeyemi',
+                    'phone' => '+2348000000011',
+                    'password' => Hash::make('ANFAAN@2026!rep'),
+                    'account_type' => 'association_officer',
+                    'status' => 'active',
+                    'email_verified_at' => now(),
+                ]
+            );
+            $officer_anfaan->syncRoles(['association_officer']);
+
+            $association_anfaan->users()->syncWithoutDetaching([
+                $officer_anfaan->id => [
+                    'designation_title' => 'Secretary',
+                    'is_active' => true,
+                ],
+            ]);
+
+
+            //SNA
+            $association_sna = Association::query()->where('code', 'sna')->firstOrFail();
+
+            $officer_sna = User::query()->updateOrCreate(
+                ['email' => 'info@sna.com'],
+                [
+                    'first_name' => 'Ngozi',
+                    'last_name' => 'Adeyemi',
+                    'phone' => '+2348000000011',
+                    'password' => Hash::make('SNA@2026!rep'),
+                    'account_type' => 'association_officer',
+                    'status' => 'active',
+                    'email_verified_at' => now(),
+                ]
+            );
+            $officer_sna->syncRoles(['association_officer']);
+
+            $association_sna->users()->syncWithoutDetaching([
+                $officer_sna->id => [
                     'designation_title' => 'Secretary',
                     'is_active' => true,
                 ],
