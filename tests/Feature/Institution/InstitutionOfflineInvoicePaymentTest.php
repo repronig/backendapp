@@ -16,7 +16,7 @@ use Laravel\Sanctum\Sanctum;
 beforeEach(function () {
     ensureRole('institution_user');
     ensureRole('admin');
-    Storage::fake('local');
+    Storage::fake((string) config('filesystems.default', 'local'));
 });
 
 function seedOfflineEnabledLicensing(): void
@@ -95,6 +95,10 @@ it('allows an institution user to submit an offline invoice payment for review',
         ->assertJsonPath('data.gateway_name', 'offline')
         ->assertJsonPath('data.payment_status', 'pending_offline')
         ->assertJsonPath('data.amount', '5000.00');
+
+    $payment = \App\Models\LicencePayment::query()->latest('id')->first();
+    expect(data_get($payment?->raw_response_json, 'offline.proof_disk'))
+        ->toBe((string) config('filesystems.default', 'local'));
 
     expect((float) $invoice->fresh()->outstanding_amount)->toBe(10000.0);
     Mail::assertQueued(OfflineInvoicePaymentSubmittedAdminMailable::class, 1);

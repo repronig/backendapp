@@ -64,7 +64,7 @@ it('persists optional member_provided_id on member application create', function
 });
 
 it('stores only the current application document types', function () {
-    Storage::fake('public');
+    Storage::fake((string) config('filesystems.default', 'local'));
 
     $user = actingAsApiUser('member', ['account_type' => 'member']);
     $application = MemberApplication::factory()->create([

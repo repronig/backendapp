@@ -101,7 +101,7 @@ it('rejects legacy work fields and unsupported work file types', function () {
         'work_status' => 'draft',
     ]);
 
-    Storage::fake('public');
+    Storage::fake((string) config('filesystems.default', 'local'));
 
     $this->postJson("/api/v1/works/{$work->id}/files", [
         'file_type' => 'manuscript',
@@ -408,7 +408,7 @@ it('notifies member and sets work to changes requested on contributor dispute, t
 
 it('stores only the current related work file types', function () {
     [$user, $member] = actingAsMemberWithProfile();
-    Storage::fake('public');
+    Storage::fake((string) config('filesystems.default', 'local'));
 
     $work = Work::factory()->create([
         'member_id' => $member->id,
