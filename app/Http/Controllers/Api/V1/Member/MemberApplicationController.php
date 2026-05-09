@@ -10,6 +10,7 @@ use App\Http\Requests\Api\V1\StoreMemberApplicationRequest;
 use App\Http\Requests\Api\V1\UpdateMemberApplicationRequest;
 use App\Http\Resources\Api\V1\MemberApplicationResource;
 use App\Models\MemberApplication;
+use App\Support\Pdf\MemberPdfPresenter;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -102,7 +103,7 @@ class MemberApplicationController extends BaseApiController
         );
     }
 
-    public function downloadMandate(MemberApplication $memberApplication): Response
+    public function downloadMandate(MemberApplication $memberApplication, MemberPdfPresenter $presenter): Response
     {
         $this->authorize('view', $memberApplication);
 
@@ -116,17 +117,7 @@ class MemberApplicationController extends BaseApiController
         $safeRef = preg_replace('/[^a-zA-Z0-9._-]+/', '-', $ref) ?: (string) $application->id;
         $filename = sprintf('repronig-member-mandate-%s.pdf', $safeRef);
 
-        $data = [
-            'applicationReference' => $application->application_reference ?? 'N/A',
-            'applicantName' => $application->user?->name ?? $application->user?->email ?? 'N/A',
-            'associationName' => $application->association?->name ?? 'N/A',
-            'applicationStatus' => (string) ($application->application_status ?? 'N/A'),
-            'affiliationStatus' => (string) ($application->affiliation_status ?? 'N/A'),
-            'consentAccepted' => $application->consent_accepted ? 'Yes' : 'No',
-            'consentDate' => $application->consent_date?->toDateString() ?? 'N/A',
-            'submittedAt' => $application->submitted_at?->toIso8601String() ?? 'N/A',
-            'reviewedAt' => $application->reviewed_at?->toIso8601String() ?? 'N/A',
-        ];
+        $data = $presenter->memberMandateCertificateData($application);
 
         return Pdf::loadView('pdf.member-application-mandate', $data)
             ->setPaper('a4', 'portrait')
