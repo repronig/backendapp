@@ -41,6 +41,15 @@ class ApplicationReviewController extends BaseApiController
                 $request->filled('status'),
                 fn ($q) => $q->where('application_status', $request->string('status')->value())
             )
+            ->when($request->filled('affiliation_status'), function ($q) use ($request) {
+                $value = $request->string('affiliation_status')->value();
+                if (! in_array($value, ['pending', 'validated', 'rejected'], true)) {
+                    throw ValidationException::withMessages([
+                        'affiliation_status' => ['Invalid affiliation status filter.'],
+                    ]);
+                }
+                $q->where('affiliation_status', $value);
+            })
             ->when($request->filled('search'), function ($q) use ($request) {
                 $search = $request->string('search')->value();
 

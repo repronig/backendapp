@@ -43,6 +43,35 @@ it('lists member applications for the association', function () {
         ->assertJsonStructure(['message', 'data', 'meta']);
 });
 
+it('filters association applications by affiliation_status', function () {
+    [, $association] = actingAsAssociationOfficer();
+
+    $pending = MemberApplication::factory()->create([
+        'association_id' => $association->id,
+        'application_status' => 'submitted',
+        'affiliation_status' => 'pending',
+    ]);
+
+    MemberApplication::factory()->create([
+        'association_id' => $association->id,
+        'application_status' => 'submitted',
+        'affiliation_status' => 'validated',
+    ]);
+
+    $this->getJson('/api/v1/association/applications?affiliation_status=pending')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $pending->id);
+});
+
+it('rejects invalid affiliation_status filter for association applications', function () {
+    actingAsAssociationOfficer();
+
+    $this->getJson('/api/v1/association/applications?affiliation_status=not_real')
+        ->assertStatus(422)
+        ->assertJsonValidationErrors(['affiliation_status']);
+});
+
 it('includes member bank details when an association officer views an application', function () {
     [, $association] = actingAsAssociationOfficer();
 

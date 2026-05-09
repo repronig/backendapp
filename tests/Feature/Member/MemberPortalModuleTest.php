@@ -5,7 +5,6 @@ use App\Models\Member;
 use App\Models\MemberApplication;
 use App\Models\Work;
 use App\Support\DashboardPayload;
-use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
     ensureRole('member');
@@ -101,7 +100,6 @@ it('returns notification unread count', function () {
 });
 
 it('allows mandate download only after admin approval', function () {
-    Storage::fake('public');
     [$user] = actingAsApprovedMember();
 
     $application = MemberApplication::factory()->create([
@@ -118,9 +116,10 @@ it('allows mandate download only after admin approval', function () {
         'application_reference' => 'MAP-TEST-1001',
     ]);
 
-    $this->get("/api/v1/member-applications/{$application->id}/mandate")
-        ->assertOk()
-        ->assertHeader('content-type', 'text/plain; charset=UTF-8');
+    $response = $this->get("/api/v1/member-applications/{$application->id}/mandate")
+        ->assertOk();
 
-    Storage::disk('public')->assertExists("member-applications/mandates/{$application->id}/member-application-mandate-map-test-1001.txt");
+    $contentType = strtolower((string) $response->headers->get('content-type'));
+    expect($contentType)->toContain('application/pdf');
+    expect(substr($response->getContent(), 0, 4))->toBe('%PDF');
 });
