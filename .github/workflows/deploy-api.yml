@@ -52,5 +52,25 @@ jobs:
           script: |
             set -euo pipefail
             echo "Deploying ${{ github.ref_name }} to ${{ steps.target.outputs.env_name }}"
-            bash "${{ steps.target.outputs.script }}"
+            set +e
+            deploy_output="$(bash "${{ steps.target.outputs.script }}" 2>&1)"
+            deploy_rc=$?
+            set -e
+            printf '%s\n' "$deploy_output"
+            if [ "$deploy_rc" -ne 0 ]; then
+              perm_errors="$(printf '%s\n' "$deploy_output" | grep -E 'Operation not permitted' || true)"
+              if [ -n "$perm_errors" ]; then
+                unexpected_perm_errors="$(printf '%s\n' "$perm_errors" | grep -Ev "^chmod: changing permissions of '.*/shared/storage/framework/views/[^']+': Operation not permitted$" || true)"
+                if [ -z "$unexpected_perm_errors" ]; then
+                  echo "::warning::Ignoring non-fatal chmod permission warnings on compiled Laravel view cache files."
+                else
+                  echo "::error::Deploy script failed with exit code $deploy_rc"
+                  printf '%s\n' "$unexpected_perm_errors"
+                  exit "$deploy_rc"
+                fi
+              else
+                echo "::error::Deploy script failed with exit code $deploy_rc"
+                exit "$deploy_rc"
+              fi
+            fi
             echo "Deployment complete"
