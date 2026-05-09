@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * S3 / CDN base URL for public assets. Must point at the bucket (or CDN) root where object keys
+ * like "documents/..." live — not at a "/storage" path (that is only for local public symlink URLs).
+ */
+$awsPublicBaseUrl = env('AWS_URL');
+if (is_string($awsPublicBaseUrl) && $awsPublicBaseUrl !== '') {
+    $awsPublicBaseUrl = rtrim(preg_replace('#/storage/?$#i', '', rtrim($awsPublicBaseUrl, '/')), '/');
+}
+
 return [
 
     /*
@@ -45,7 +54,7 @@ return [
                 'secret' => env('AWS_SECRET_ACCESS_KEY'),
                 'region' => env('AWS_DEFAULT_REGION'),
                 'bucket' => env('AWS_BUCKET'),
-                'url' => env('AWS_URL'),
+                'url' => $awsPublicBaseUrl ?: env('AWS_URL'),
                 'endpoint' => env('AWS_ENDPOINT'),
                 'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
                 'visibility' => 'public',
@@ -67,7 +76,7 @@ return [
             'secret' => env('AWS_SECRET_ACCESS_KEY'),
             'region' => env('AWS_DEFAULT_REGION'),
             'bucket' => env('AWS_BUCKET'),
-            'url' => env('AWS_URL'),
+            'url' => $awsPublicBaseUrl ?: env('AWS_URL'),
             'endpoint' => env('AWS_ENDPOINT'),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'throw' => false,

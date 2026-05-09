@@ -9,6 +9,47 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class PublicAssetUrl
 {
+    /**
+     * Public object keys on S3 match DB paths (e.g. "documents/..."), not "storage/documents/...".
+     * Strip a mistaken "/storage/" segment from absolute URLs when it precedes a known root folder.
+     */
+    public static function normalizeRemotePublicObjectUrl(string $url): string
+    {
+        $parts = parse_url($url);
+        if (! is_array($parts) || empty($parts['scheme']) || empty($parts['host']) || empty($parts['path'])) {
+            return $url;
+        }
+
+        $path = $parts['path'];
+        $prefixes = 'documents|user_avatars|work-files|works|member-application-documents|institution-documents';
+
+        if (preg_match('#^/storage/(?:'.$prefixes.')(?:/|$)#i', $path)) {
+            $parts['path'] = preg_replace('#^/storage/#i', '/', $path, 1);
+
+            return self::rebuildHttpUrlFromParts($parts);
+        }
+
+        return $url;
+    }
+
+    /**
+     * @param  array<string, mixed>  $parts
+     */
+    private static function rebuildHttpUrlFromParts(array $parts): string
+    {
+        $scheme = ($parts['scheme'] ?? 'https').'://';
+        $user = $parts['user'] ?? '';
+        $pass = isset($parts['pass']) ? ':'.$parts['pass'] : '';
+        $auth = $user !== '' ? $user.$pass.'@' : '';
+        $host = $parts['host'] ?? '';
+        $port = isset($parts['port']) ? ':'.$parts['port'] : '';
+        $path = $parts['path'] ?? '';
+        $query = isset($parts['query']) ? '?'.$parts['query'] : '';
+        $fragment = isset($parts['fragment']) ? '#'.$parts['fragment'] : '';
+
+        return $scheme.$auth.$host.$port.$path.$query.$fragment;
+    }
+
     public static function fromPath(?string $path, ?string $baseUrl = null, ?Request $request = null): ?string
     {
         if (! $path) {
@@ -29,7 +70,7 @@ class PublicAssetUrl
                 ->contains(fn (string $prefix): bool => Str::startsWith($normalizedPath, $prefix));
 
             if (! $isKnownPublicStorageUrl) {
-                return $cleanPath;
+                return self::normalizeRemotePublicObjectUrl($cleanPath);
             }
 
             $cleanPath = $normalizedPath;
@@ -45,19 +86,19 @@ class PublicAssetUrl
 
         if (config('filesystems.disks.public.driver') === 's3') {
             try {
-                return Storage::disk('public')->url($cleanPath);
+                return self::normalizeRemotePublicObjectUrl(Storage::disk('public')->url($cleanPath));
             } catch (\Throwable) {
                 // Fall back to the local-style URL below if the S3 disk is not fully configured yet.
             }
         }
 
-        $storagePath = 'storage/' . ltrim($cleanPath, '/');
+        $storagePath = 'storage/'.ltrim($cleanPath, '/');
 
         $origin = $baseUrl
             ?: self::appOriginFromRequest($request)
             ?: rtrim((string) config('app.url'), '/');
 
-        return rtrim($origin, '/') . '/' . $storagePath;
+        return rtrim($origin, '/').'/'.$storagePath;
     }
 
     public static function fromMedia(?Media $media, ?string $baseUrl = null, ?Request $request = null): ?string
@@ -73,7 +114,7 @@ class PublicAssetUrl
         }
 
         if (! $rawUrl && property_exists($media, 'file_name') && property_exists($media, 'id')) {
-            $rawUrl = trim($media->id . '/' . $media->file_name, '/');
+            $rawUrl = trim($media->id.'/'.$media->file_name, '/');
         }
 
         return self::fromPath($rawUrl, $baseUrl, $request);
@@ -91,10 +132,10 @@ class PublicAssetUrl
         $host = $request->getHost();
         $port = $request->getPort();
 
-        $origin = $scheme . '://' . $host;
+        $origin = $scheme.'://'.$host;
 
         if ($port && ! in_array((int) $port, [80, 443], true)) {
-            $origin .= ':' . $port;
+            $origin .= ':'.$port;
         }
 
         return $origin;
