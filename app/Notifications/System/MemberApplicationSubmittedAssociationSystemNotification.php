@@ -23,13 +23,15 @@ class MemberApplicationSubmittedAssociationSystemNotification extends BaseSystem
             $message .= ' Ref: '.$this->applicationReference.'.';
         }
 
+        $title = sprintf('Member Affiliation Request for %s', $this->applicantName);
+
         return [
             ...$this->basePayload(
                 'member_application_submitted_association',
-                'New member application submitted',
+                $title,
                 $message,
                 'info',
-                '/admin/membership',
+                '/association/applications',
                 [
                     'entity_type' => 'member_application',
                     'entity_id' => $this->applicationId,

@@ -11,7 +11,12 @@ class MemberApplicationSubmittedAssociationMailable extends BaseAppMailable
 
     protected function subjectLine(): string
     {
-        return 'New Member Application Submitted';
+        $applicant = $this->memberApplication->user;
+        $name = trim((string) ($applicant?->name ?? '')) !== ''
+            ? (string) $applicant->name
+            : (string) ($applicant?->email ?? 'Applicant');
+
+        return 'Member Affiliation Request for '.$name;
     }
 
     protected function viewName(): string
@@ -23,9 +28,11 @@ class MemberApplicationSubmittedAssociationMailable extends BaseAppMailable
     {
         $application = $this->memberApplication->fresh(['user', 'association']);
 
+        $base = rtrim((string) config('app.frontend_url'), '/');
+
         return [
             'memberApplication' => $application ?? $this->memberApplication,
-            'adminMembershipUrl' => rtrim((string) config('app.frontend_url'), '/').'/admin/membership',
+            'verifyAffiliationUrl' => $base.'/association/applications',
         ];
     }
 }

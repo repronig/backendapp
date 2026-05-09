@@ -9,7 +9,6 @@ use App\Notifications\System\MemberApplicationSubmittedAssociationSystemNotifica
 use App\Services\Mail\MailService;
 use App\Services\Notifications\SystemNotificationService;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Queue\Queueable;
 
 class SendMemberApplicationSubmittedAssociationNotificationsJob implements ShouldQueue
@@ -33,8 +32,12 @@ class SendMemberApplicationSubmittedAssociationNotificationsJob implements Shoul
         }
 
         $association = $application->association;
-        $applicantName = (string) ($application->user?->name ?: 'A member');
+        $applicantName = trim((string) ($application->user?->name ?? '')) !== ''
+            ? (string) $application->user->name
+            : (string) ($application->user?->email ?? 'Applicant');
         $applicationRef = (string) ($application->application_reference ?: $application->external_id ?: '');
+
+        $guard = (string) config('auth.defaults.guard', 'web');
 
         $officers = User::query()
             ->where('status', 'active')
@@ -44,11 +47,10 @@ class SendMemberApplicationSubmittedAssociationNotificationsJob implements Shoul
                     ->where('associations.is_enabled', true)
                     ->where('associations.status', 'active');
             })
-            ->where(function (Builder $query): void {
+            ->where(function ($query) use ($guard): void {
                 $query->where('account_type', 'association_officer')
-                    ->orWhereHas('roles', function ($roles): void {
-                        $roles->where('guard_name', (string) config('auth.defaults.guard', 'web'))
-                            ->where('name', 'association_officer');
+                    ->orWhereHas('roles', function ($roles) use ($guard): void {
+                        $roles->where('guard_name', $guard)->where('name', 'association_officer');
                     });
             })
             ->get()
@@ -64,6 +66,8 @@ class SendMemberApplicationSubmittedAssociationNotificationsJob implements Shoul
                 );
             }
 
+            $systemTitle = sprintf('Member Affiliation Request for %s', $applicantName);
+
             $systemNotifications->send(
                 $officer,
                 new MemberApplicationSubmittedAssociationSystemNotification(
@@ -73,7 +77,9 @@ class SendMemberApplicationSubmittedAssociationNotificationsJob implements Shoul
                     (int) $application->id
                 ),
                 'member_application_submitted_association',
-                'New member application submitted'
+                $systemTitle,
+                [],
+                dispatchSynchronously: true
             );
         }
     }

@@ -199,11 +199,13 @@ class MailService
             return;
         }
 
+        $subject = $mailable->envelope()->subject;
+
         $this->sendMailable(
             $officer->id,
             $email,
             'member_application_submitted_association',
-            'New Member Application Submitted',
+            $subject,
             $mailable,
             ['entity_type' => 'member_application', 'entity_id' => $memberApplication->id]
         );

@@ -9,6 +9,7 @@ use App\Support\Notifications\NotificationPreferenceResolver;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification as NotificationFacade;
 use Throwable;
 
 class SystemNotificationService
@@ -17,7 +18,7 @@ class SystemNotificationService
         protected NotificationPreferenceResolver $preferenceResolver
     ) {}
 
-    public function send(User $user, Notification $notification, string $notificationKey, ?string $subject = null, array $context = []): void
+    public function send(User $user, Notification $notification, string $notificationKey, ?string $subject = null, array $context = [], bool $dispatchSynchronously = false): void
     {
         $payload = method_exists($notification, 'toArray')
             ? (array) $notification->toArray($user)
@@ -54,7 +55,11 @@ class SystemNotificationService
         ]);
 
         try {
-            $user->notify($notification);
+            if ($dispatchSynchronously) {
+                NotificationFacade::sendNow($user, $notification);
+            } else {
+                $user->notify($notification);
+            }
 
             $log->update([
                 'status' => 'sent',
