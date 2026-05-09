@@ -10,7 +10,13 @@ use App\Services\Mail\MailService;
 use App\Services\Notifications\SystemNotificationService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Log;
 
+/**
+ * Dispatched to the default queue (e.g. Redis) like other notification jobs.
+ * Email is sent with {@see MailService::sendMailable(..., queueMailable: false)} so the
+ * message is not double-queued via a {@see \Illuminate\Contracts\Queue\ShouldQueue} mailable.
+ */
 class SendMemberApplicationSubmittedAssociationNotificationsJob implements ShouldQueue
 {
     use Queueable;
@@ -37,8 +43,6 @@ class SendMemberApplicationSubmittedAssociationNotificationsJob implements Shoul
             : (string) ($application->user?->email ?? 'Applicant');
         $applicationRef = (string) ($application->application_reference ?: $application->external_id ?: '');
 
-        $guard = (string) config('auth.defaults.guard', 'web');
-
         $officers = User::query()
             ->where('status', 'active')
             ->whereHas('associations', function ($query) use ($application): void {
@@ -47,15 +51,38 @@ class SendMemberApplicationSubmittedAssociationNotificationsJob implements Shoul
                     ->where('associations.is_enabled', true)
                     ->where('associations.status', 'active');
             })
-            ->where(function ($query) use ($guard): void {
+            ->where(function ($query): void {
                 $query->where('account_type', 'association_officer')
-                    ->orWhereHas('roles', function ($roles) use ($guard): void {
-                        $roles->where('guard_name', $guard)->where('name', 'association_officer');
+                    ->orWhereHas('roles', function ($roles): void {
+                        $roles->where('name', 'association_officer');
                     });
             })
             ->get()
             ->unique('id')
             ->values();
+
+        if ($officers->isEmpty()) {
+            Log::warning('member_application_submitted_no_association_officers', [
+                'member_application_id' => $application->id,
+                'association_id' => $application->association_id,
+            ]);
+
+            $contact = trim((string) ($association?->contact_email ?? ''));
+            if ($contact !== '') {
+                $fallbackMailable = new MemberApplicationSubmittedAssociationMailable($application);
+                $mailService->sendMailable(
+                    null,
+                    $contact,
+                    'member_application_submitted_association',
+                    $fallbackMailable->envelope()->subject,
+                    $fallbackMailable,
+                    ['entity_type' => 'member_application', 'entity_id' => $application->id],
+                    queueMailable: false
+                );
+            }
+
+            return;
+        }
 
         foreach ($officers as $officer) {
             if ($officer->email) {

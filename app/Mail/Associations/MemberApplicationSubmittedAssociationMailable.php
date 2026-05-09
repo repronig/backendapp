@@ -2,11 +2,21 @@
 
 namespace App\Mail\Associations;
 
-use App\Mail\BaseAppMailable;
 use App\Models\MemberApplication;
+use Illuminate\Bus\Queueable;
+use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Content;
+use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Queue\SerializesModels;
 
-class MemberApplicationSubmittedAssociationMailable extends BaseAppMailable
+/**
+ * Sent synchronously when a member submits an application so delivery does not depend
+ * on a mail queue worker (unlike {@see \App\Mail\BaseAppMailable} which implements ShouldQueue).
+ */
+class MemberApplicationSubmittedAssociationMailable extends Mailable
 {
+    use Queueable, SerializesModels;
+
     public function __construct(public MemberApplication $memberApplication) {}
 
     protected function subjectLine(): string
@@ -19,20 +29,22 @@ class MemberApplicationSubmittedAssociationMailable extends BaseAppMailable
         return 'Member Affiliation Request for '.$name;
     }
 
-    protected function viewName(): string
+    public function envelope(): Envelope
     {
-        return 'emails.associations.member-application-submitted';
+        return new Envelope(subject: $this->subjectLine());
     }
 
-    protected function viewData(): array
+    public function content(): Content
     {
         $application = $this->memberApplication->fresh(['user', 'association']);
-
         $base = rtrim((string) config('app.frontend_url'), '/');
 
-        return [
-            'memberApplication' => $application ?? $this->memberApplication,
-            'verifyAffiliationUrl' => $base.'/association/applications',
-        ];
+        return new Content(
+            view: 'emails.associations.member-application-submitted',
+            with: [
+                'memberApplication' => $application ?? $this->memberApplication,
+                'verifyAffiliationUrl' => $base.'/association/applications',
+            ],
+        );
     }
 }

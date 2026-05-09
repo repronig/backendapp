@@ -134,7 +134,7 @@ it('does not submit a member application until proof of id and proof of address 
         ->assertJsonPath('data.application_status', 'submitted')
         ->assertJsonPath('data.submission_stage', 'under_association_review');
 
-    Mail::assertQueued(MemberApplicationSubmittedAssociationMailable::class, 1);
+    Mail::assertSent(MemberApplicationSubmittedAssociationMailable::class, 1);
     expect(NotificationLog::query()
         ->where('notification_key', 'member_application_submitted_association')
         ->where('channel', 'email')

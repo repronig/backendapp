@@ -36,7 +36,7 @@ class AuthController extends BaseApiController
         );
 
         return $this->created(
-            'Member account created successfully. Please verify the OTP sent to your email and SMS.',
+            'Member account created successfully. Please verify the OTP sent to your email.',
             new RegisteredMemberResource($result)
         );
     }
@@ -108,7 +108,7 @@ class AuthController extends BaseApiController
         );
 
         return $this->created(
-            'Institution account created successfully. Please verify the OTP sent to your email and SMS.',
+            'Institution account created successfully. Please verify the OTP sent to your email.',
             new RegisteredInstitutionResource($result)
         );
     }

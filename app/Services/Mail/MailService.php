@@ -207,7 +207,8 @@ class MailService
             'member_application_submitted_association',
             $subject,
             $mailable,
-            ['entity_type' => 'member_application', 'entity_id' => $memberApplication->id]
+            ['entity_type' => 'member_application', 'entity_id' => $memberApplication->id],
+            queueMailable: false
         );
     }
 
@@ -546,7 +547,8 @@ class MailService
         string $notificationKey,
         string $subject,
         Mailable $mailable,
-        array $context = []
+        array $context = [],
+        bool $queueMailable = true,
     ): void {
         if ($recipient === '') {
             return;
@@ -562,7 +564,11 @@ class MailService
         $log = $this->queueNotificationLog($userId, $notificationKey, NotificationChannels::EMAIL, $subject, $idempotencyKey, $payload);
 
         try {
-            Mail::to($recipient)->queue($mailable);
+            if ($queueMailable) {
+                Mail::to($recipient)->queue($mailable);
+            } else {
+                Mail::to($recipient)->send($mailable);
+            }
             $this->markNotificationSent($log);
         } catch (Throwable $e) {
             $this->markNotificationFailed($log, $e->getMessage());
