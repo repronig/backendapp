@@ -427,17 +427,17 @@
     <div class="sheet-inner">
         <div class="masthead">
             {!! $brandLogoHtml !!}
-            <div class="eyebrow">Member record</div>
-            <div class="platform">{{ $platformName }}</div>
+            {{-- <div class="eyebrow">Member record</div>
+            <div class="platform">{{ $platformName }}</div> --}}
             <div class="issued-line">Document generated {{ $generatedAt }}</div>
         </div>
 
         <div class="body">
             <div class="doc-title">{{ $documentTitle }}</div>
-            <div class="ribbon">{{ $ribbonLine1 }}<br />{{ $ribbonLine2 }}</div>
+            <div class="ribbon">{{ $ribbonLine1 }} {{ $ribbonLine2 }}</div>
 
             <div class="recipient">{{ $applicantName }}</div>
-            <div class="sub-recipient">{{ $associationLine }}</div>
+            {{-- <div class="sub-recipient">{{ $associationLine }}</div> --}}
 
             <div class="panel">
                 <table class="panel-table">
@@ -446,10 +446,8 @@
                     <tr><td class="label">Applicant type</td><td class="value">{{ $applicantTypeLabel }}</td></tr>
                     <tr><td class="label">Member / author type</td><td class="value">{{ $authorTypeLabel }}</td></tr>
                     <tr><td class="label">Author category</td><td class="value">{{ $authorCategoryLabel }}</td></tr>
-                    <tr><td class="label">Nationality</td><td class="value">{{ $nationality }}</td></tr>
-                    <tr><td class="label">Country of residence</td><td class="value">{{ $countryOfResidence }}</td></tr>
-                    <tr><td class="label">Application status</td><td class="value">{{ $applicationStatusLabel }}</td></tr>
-                    <tr><td class="label">Affiliation status</td><td class="value">{{ $affiliationStatusLabel }}</td></tr>
+                    <tr><td class="label">Nationality</td><td class="value">{{ $nationality }}</td></tr>  
+                    <tr><td class="label">Application status</td><td class="value">{{ $applicationStatusLabel }}</td></tr> 
                     <tr><td class="label">Consent recorded</td><td class="value">{{ $consentRecordedLine }}</td></tr>
                     <tr><td class="label">Submitted on</td><td class="value">{{ $submittedOn }}</td></tr>
                     <tr><td class="label">Admin reviewed on</td><td class="value">{{ $reviewedOn }}</td></tr>
@@ -467,7 +465,7 @@
             </div>
 
             <div class="footer">
-                This mandate is issued electronically and summarises the consent and membership data held on the REPRONIG platform. Retain it for your records and any association or audit enquiries.
+                This mandate is issued electronically and summarises the consent and membership data held on the REPRONIG platform.
                 <div class="ref">Verification ref: {{ $referenceCode }}</div>
             </div>
         </div>
