@@ -442,13 +442,15 @@
         <div class="body">
             <div class="doc-title">{{ $documentTitle }}</div>
             <div class="ribbon">{{ $ribbonLine1 }} {{ $ribbonLine2 }}</div>
+            <div><p>&nbsp;;</p><p>&nbsp;;</p><p>&nbsp;;</p></div>
 
-            <div class="recipient">{{ $applicantName }}</div>
+            {{-- <div class="recipient">{{ $applicantName }}</div> --}}
             {{-- <div class="sub-recipient">{{ $associationLine }}</div> --}}
 
             <div class="panel">
                 <table class="panel-table">
                     <tr><td class="label">Application reference</td><td class="value">{{ $applicationReference }}</td></tr>
+                    <tr><td class="label">Full name</td><td class="value">{{ $applicantName }}</td></tr>
                     <tr><td class="label">Association</td><td class="value">{{ $associationLine }}</td></tr>
                     <tr><td class="label">Applicant type</td><td class="value">{{ $applicantTypeLabel }}</td></tr>
                     <tr><td class="label">Member / author type</td><td class="value">{{ $authorTypeLabel }}</td></tr>
@@ -469,10 +471,7 @@
                             <div class="sig-meta">Date of consent: {{ $consentDateFormatted }}</div>
                         </td>
                         <td class="sig-col sig-col-right">
-                            <div class="sig-label">Digitally Signed:</div>
-                            @if(! empty($executiveDirectorSignatureHtml))
-                                <div class="sig-signature">{!! $executiveDirectorSignatureHtml !!}</div>
-                            @endif
+                            <div class="sig-label">Digitally Signed:</div> 
                             <div class="sig-name">{{ $executiveDirectorName }}</div>
                             <div class="sig-role-line">Executive Director, REPRONIG</div>
                         </td>
