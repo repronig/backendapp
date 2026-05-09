@@ -53,7 +53,7 @@ class StartSecurityChallengeAction
 
         if (! $emailSent && ! $smsSent) {
             throw ValidationException::withMessages([
-                'otp' => ['Unable to deliver OTP right now. Please try again in a moment.'],
+                'otp' => [$this->otpDeliveryFailureMessage($channels)],
             ]);
         }
 
@@ -101,5 +101,28 @@ class StartSecurityChallengeAction
             'email_enabled' => (bool) ($security['otp_email_enabled'] ?? true),
             'sms_enabled' => (bool) ($security['otp_sms_enabled'] ?? false),
         ];
+    }
+
+    /**
+     * User-facing hint when no OTP channel succeeded (see logs for technical detail).
+     */
+    protected function otpDeliveryFailureMessage(array $channels): string
+    {
+        $emailOn = $channels['email_enabled'];
+        $smsOn = $channels['sms_enabled'];
+
+        if (! $emailOn && ! $smsOn) {
+            return 'Verification delivery is turned off in platform settings. Please contact support.';
+        }
+
+        if ($emailOn && ! $smsOn) {
+            return 'We could not send the verification email. Please try again shortly. If this keeps happening, contact support — outbound email (SMTP) may be misconfigured on the server.';
+        }
+
+        if (! $emailOn && $smsOn) {
+            return 'We could not send the verification SMS. Please try again shortly or contact support.';
+        }
+
+        return 'We could not send the verification code by email or SMS. Please try again shortly or contact support.';
     }
 }
