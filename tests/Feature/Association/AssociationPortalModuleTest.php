@@ -1,7 +1,12 @@
 <?php
 
+use App\Mail\Members\MemberAffiliationAssociationDecisionMemberMailable;
 use App\Models\MemberApplication;
 use App\Models\User;
+use App\Notifications\System\MemberAffiliationAssociationDecisionMemberNotification;
+use App\Notifications\System\MemberAffiliationReviewedSystemNotification;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 use Laravel\Sanctum\Sanctum;
 
 beforeEach(function () {
@@ -130,6 +135,70 @@ it('copies member_provided_id onto the member record when admin approves after a
     ]);
 });
 
+it('emails the member and sends a member system notification when affiliation is validated', function () {
+    Mail::fake();
+    Notification::fake();
+
+    [, $association] = actingAsAssociationOfficer();
+
+    $applicant = User::factory()->create([
+        'account_type' => 'member',
+        'email' => 'member-affiliation-validated@example.com',
+        'email_verified_at' => now(),
+        'status' => 'active',
+    ]);
+
+    $application = MemberApplication::factory()->create([
+        'user_id' => $applicant->id,
+        'association_id' => $association->id,
+        'application_status' => 'submitted',
+    ]);
+
+    $this->postJson("/api/v1/association/applications/{$application->id}/validate-affiliation", [])
+        ->assertOk();
+
+    Mail::assertQueued(MemberAffiliationAssociationDecisionMemberMailable::class, function (MemberAffiliationAssociationDecisionMemberMailable $mail) use ($applicant): bool {
+        return $mail->hasTo($applicant->email);
+    });
+
+    Notification::assertSentTo($applicant, MemberAffiliationAssociationDecisionMemberNotification::class);
+});
+
+it('admin affiliation system notification cites the association name', function () {
+    Notification::fake();
+    ensureRole('admin');
+
+    $admin = User::factory()->create([
+        'account_type' => 'admin',
+        'email_verified_at' => now(),
+        'status' => 'active',
+    ]);
+    $admin->assignRole('admin');
+
+    [, $association] = actingAsAssociationOfficer();
+
+    $applicant = User::factory()->create([
+        'account_type' => 'member',
+        'email_verified_at' => now(),
+        'status' => 'active',
+    ]);
+
+    $application = MemberApplication::factory()->create([
+        'user_id' => $applicant->id,
+        'association_id' => $association->id,
+        'application_status' => 'submitted',
+    ]);
+
+    $this->postJson("/api/v1/association/applications/{$application->id}/validate-affiliation", [])
+        ->assertOk();
+
+    Notification::assertSentTo($admin, MemberAffiliationReviewedSystemNotification::class, function (MemberAffiliationReviewedSystemNotification $notification) use ($admin, $association): bool {
+        $payload = $notification->toArray($admin);
+
+        return str_contains((string) ($payload['message'] ?? ''), $association->name);
+    });
+});
+
 it('allows association officer to reject affiliation on submitted application', function () {
     [, $association] = actingAsAssociationOfficer();
 
@@ -146,6 +215,36 @@ it('allows association officer to reject affiliation on submitted application', 
     $response->assertOk()
         ->assertJsonPath('data.application_status', 'submitted')
         ->assertJsonPath('data.affiliation_status', 'rejected');
+});
+
+it('emails the member when affiliation is rejected', function () {
+    Mail::fake();
+    Notification::fake();
+
+    [, $association] = actingAsAssociationOfficer();
+
+    $applicant = User::factory()->create([
+        'account_type' => 'member',
+        'email' => 'member-affiliation-rejected@example.com',
+        'email_verified_at' => now(),
+        'status' => 'active',
+    ]);
+
+    $application = MemberApplication::factory()->create([
+        'user_id' => $applicant->id,
+        'association_id' => $association->id,
+        'application_status' => 'submitted',
+    ]);
+
+    $this->postJson("/api/v1/association/applications/{$application->id}/reject-affiliation", [
+        'reason' => 'Could not verify affiliation.',
+    ])->assertOk();
+
+    Mail::assertQueued(MemberAffiliationAssociationDecisionMemberMailable::class, function (MemberAffiliationAssociationDecisionMemberMailable $mail) use ($applicant): bool {
+        return $mail->hasTo($applicant->email) && $mail->decision === 'rejected';
+    });
+
+    Notification::assertSentTo($applicant, MemberAffiliationAssociationDecisionMemberNotification::class);
 });
 
 it('returns forbidden when an association officer has no linked association', function () {

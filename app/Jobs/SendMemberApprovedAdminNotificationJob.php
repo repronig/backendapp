@@ -3,8 +3,10 @@
 namespace App\Jobs;
 
 use App\Mail\Members\AdminMemberApprovedMailable;
+use App\Mail\Members\MemberAffiliationAssociationDecisionMemberMailable;
 use App\Models\MemberApplication;
 use App\Models\User;
+use App\Notifications\System\MemberAffiliationAssociationDecisionMemberNotification;
 use App\Notifications\System\MemberAffiliationReviewedSystemNotification;
 use App\Services\Mail\MailService;
 use App\Services\Notifications\SystemNotificationService;
@@ -50,6 +52,29 @@ class SendMemberApprovedAdminNotificationJob implements ShouldQueue
                 new MemberAffiliationReviewedSystemNotification($this->memberApplication, $this->reviewer, $this->decision),
                 'member_affiliation_reviewed',
                 $subject
+            );
+        }
+
+        $applicant = $this->memberApplication->user;
+        if ($applicant !== null && filled($applicant->email)) {
+            $memberSubject = $this->decision === 'rejected'
+                ? 'Your membership affiliation was declined by your association'
+                : 'Your membership affiliation was validated by your association';
+
+            $mailService->sendMailable(
+                $applicant->id,
+                (string) $applicant->email,
+                'member_affiliation_association_decision',
+                $memberSubject,
+                new MemberAffiliationAssociationDecisionMemberMailable($this->memberApplication, $this->decision),
+                ['entity_type' => 'member_application', 'entity_id' => $this->memberApplication->id]
+            );
+
+            $systemNotifications->send(
+                $applicant,
+                new MemberAffiliationAssociationDecisionMemberNotification($this->memberApplication, $this->decision),
+                'member_affiliation_association_decision',
+                $memberSubject
             );
         }
     }

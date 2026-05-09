@@ -41,6 +41,7 @@ final class NotificationPreferenceKeys
         'member_application_approved' => self::APPLICATION_UPDATES,
         'member_application_submitted_association' => self::APPLICATION_UPDATES,
         'member_affiliation_reviewed' => self::APPLICATION_UPDATES,
+        'member_affiliation_association_decision' => self::APPLICATION_UPDATES,
 
         'work_update_requested' => self::WORK_REVIEWS,
         'work_update_request_reviewed' => self::WORK_REVIEWS,

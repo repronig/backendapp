@@ -17,9 +17,10 @@ class MemberAffiliationReviewedSystemNotification extends BaseSystemNotification
     {
         $isRejected = $this->decision === 'rejected';
         $title = $isRejected ? 'Member affiliation rejected' : 'Member affiliation validated';
+        $associationLabel = $this->application->association?->name ?? 'An association';
         $message = sprintf(
             '%s %s the affiliation for %s. Admin final decision is required.',
-            $this->reviewer->name ?? 'An association officer',
+            $associationLabel,
             $isRejected ? 'rejected' : 'validated',
             $this->application->user?->name ?? $this->application->application_reference ?? 'a member application'
         );
