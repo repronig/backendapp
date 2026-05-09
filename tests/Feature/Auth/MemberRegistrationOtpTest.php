@@ -5,6 +5,7 @@ use App\Models\SecurityChallenge;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Laravel\Sanctum\Sanctum;
 
 beforeEach(function () {
     ensureRole('member');
@@ -129,6 +130,26 @@ it('resends OTP for an unverified member', function () {
 
     $response->assertOk()
         ->assertJsonStructure(['data' => ['expires_at']]);
+
+    $this->assertDatabaseHas('security_challenges', [
+        'user_id' => $user->id,
+        'purpose' => 'member_registration_otp',
+    ]);
+});
+
+it('resending verification for unverified member sends otp challenge instead of verify-email mail', function () {
+    Mail::fake();
+    $user = User::factory()->unverified()->create([
+        'email' => 'member.verify.resend@example.com',
+        'account_type' => 'member',
+    ]);
+    $user->assignRole('member');
+    Sanctum::actingAs($user);
+
+    $this->postJson('/api/v1/email/verification-notification')
+        ->assertOk()
+        ->assertJsonPath('message', 'A new email verification OTP has been sent to your email and SMS.')
+        ->assertJsonStructure(['data' => ['expires_at', 'otp_delivery']]);
 
     $this->assertDatabaseHas('security_challenges', [
         'user_id' => $user->id,

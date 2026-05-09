@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Actions\Audit\LogAuditAction;
+use App\Actions\Security\StartSecurityChallengeAction;
 use App\Http\Controllers\Api\V1\BaseApiController;
 use App\Services\Mail\MailService;
 use Illuminate\Auth\Events\Verified;
@@ -13,7 +14,8 @@ class EmailVerificationController extends BaseApiController
 {
     public function __construct(
         protected LogAuditAction $logAuditAction,
-        protected MailService $mailService
+        protected MailService $mailService,
+        protected StartSecurityChallengeAction $startSecurityChallengeAction
     ) {
     }
 
@@ -63,6 +65,24 @@ class EmailVerificationController extends BaseApiController
             return $this->success('Email is already verified.', [
                 'email_verified' => true,
                 'email_verified_at' => $user->email_verified_at,
+            ]);
+        }
+
+        if ($user->account_type === 'member') {
+            $challenge = $this->startSecurityChallengeAction->execute($user, 'member_registration_otp');
+
+            return $this->success('A new email verification OTP has been sent to your email and SMS.', [
+                'expires_at' => $challenge['expires_at'] ?? null,
+                'otp_delivery' => $challenge['delivery'] ?? null,
+            ]);
+        }
+
+        if ($user->account_type === 'institution_user') {
+            $challenge = $this->startSecurityChallengeAction->execute($user, 'institution_registration_otp');
+
+            return $this->success('A new email verification OTP has been sent to your email and SMS.', [
+                'expires_at' => $challenge['expires_at'] ?? null,
+                'otp_delivery' => $challenge['delivery'] ?? null,
             ]);
         }
 

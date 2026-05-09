@@ -7,6 +7,7 @@ use App\Models\SecurityChallenge;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Laravel\Sanctum\Sanctum;
 
 beforeEach(function () {
     ensureRole('institution_user');
@@ -84,4 +85,24 @@ it('rejects an invalid institution registration OTP', function () {
         ->assertJsonValidationErrors(['code']);
 
     expect($user->fresh()->email_verified_at)->toBeNull();
+});
+
+it('resending verification for unverified institution user sends otp challenge instead of verify-email mail', function () {
+    Mail::fake();
+    $user = User::factory()->unverified()->create([
+        'email' => 'institution.verify.resend@example.com',
+        'account_type' => 'institution_user',
+    ]);
+    $user->assignRole('institution_user');
+    Sanctum::actingAs($user);
+
+    $this->postJson('/api/v1/email/verification-notification')
+        ->assertOk()
+        ->assertJsonPath('message', 'A new email verification OTP has been sent to your email and SMS.')
+        ->assertJsonStructure(['data' => ['expires_at', 'otp_delivery']]);
+
+    $this->assertDatabaseHas('security_challenges', [
+        'user_id' => $user->id,
+        'purpose' => 'institution_registration_otp',
+    ]);
 });
