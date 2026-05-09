@@ -46,6 +46,8 @@ class FormatSettingsPayloadAction
                 'password_min_length' => 8,
                 'force_https' => true,
                 'audit_logging_enabled' => true,
+                'otp_email_enabled' => true,
+                'otp_sms_enabled' => false,
             ]),
         ];
     }

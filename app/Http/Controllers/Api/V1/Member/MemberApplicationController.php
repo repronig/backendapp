@@ -12,6 +12,9 @@ use App\Http\Resources\Api\V1\MemberApplicationResource;
 use App\Models\MemberApplication;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MemberApplicationController extends BaseApiController
 {
@@ -98,5 +101,39 @@ class MemberApplicationController extends BaseApiController
             'Member application submitted successfully.',
             new MemberApplicationResource($application)
         );
+    }
+
+    public function downloadMandate(Request $request, MemberApplication $memberApplication): StreamedResponse
+    {
+        $this->authorize('view', $memberApplication);
+
+        if (! $memberApplication->isApproved()) {
+            abort(422, 'Mandate form can only be downloaded after admin approval.');
+        }
+
+        $application = $memberApplication->load(['user', 'association']);
+        $filename = sprintf('member_application_mandate_%s.txt', $application->application_reference ?? $application->id);
+        $content = implode(PHP_EOL, [
+            'REPRONIG Member Application Mandate',
+            'Application Reference: '.($application->application_reference ?? 'N/A'),
+            'Applicant: '.($application->user?->name ?? $application->user?->email ?? 'N/A'),
+            'Association: '.($application->association?->name ?? 'N/A'),
+            'Application Status: '.($application->application_status ?? 'N/A'),
+            'Affiliation Status: '.($application->affiliation_status ?? 'N/A'),
+            'Consent Accepted: '.($application->consent_accepted ? 'Yes' : 'No'),
+            'Consent Date: '.($application->consent_date?->toDateString() ?? 'N/A'),
+            'Submitted At: '.($application->submitted_at?->toIso8601String() ?? 'N/A'),
+            'Admin Reviewed At: '.($application->reviewed_at?->toIso8601String() ?? 'N/A'),
+        ]);
+        $path = sprintf(
+            'member-applications/mandates/%s/%s',
+            $application->id,
+            Str::slug(pathinfo($filename, PATHINFO_FILENAME)).'.txt'
+        );
+        Storage::disk('public')->put($path, $content);
+
+        return Storage::disk('public')->download($path, $filename, [
+            'Content-Type' => 'text/plain; charset=UTF-8',
+        ]);
     }
 }

@@ -2,8 +2,10 @@
 
 use App\Models\AuditLog;
 use App\Models\Member;
+use App\Models\MemberApplication;
 use App\Models\Work;
 use App\Support\DashboardPayload;
+use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
     ensureRole('member');
@@ -96,4 +98,29 @@ it('returns notification unread count', function () {
     $this->getJson('/api/v1/me/notifications/unread-count')
         ->assertOk()
         ->assertJsonStructure(['message', 'data']);
+});
+
+it('allows mandate download only after admin approval', function () {
+    Storage::fake('public');
+    [$user] = actingAsApprovedMember();
+
+    $application = MemberApplication::factory()->create([
+        'user_id' => $user->id,
+        'application_status' => 'submitted',
+        'affiliation_status' => 'validated',
+    ]);
+
+    $this->get("/api/v1/member-applications/{$application->id}/mandate")
+        ->assertStatus(422);
+
+    $application->update([
+        'application_status' => 'approved',
+        'application_reference' => 'MAP-TEST-1001',
+    ]);
+
+    $this->get("/api/v1/member-applications/{$application->id}/mandate")
+        ->assertOk()
+        ->assertHeader('content-type', 'text/plain; charset=UTF-8');
+
+    Storage::disk('public')->assertExists("member-applications/mandates/{$application->id}/member-application-mandate-map-test-1001.txt");
 });

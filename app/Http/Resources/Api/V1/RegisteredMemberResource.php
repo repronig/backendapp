@@ -17,6 +17,7 @@ class RegisteredMemberResource extends JsonResource
                 ? new MemberApplicationResource($this['member_application'])
                 : null,
             'otp_expires_at' => $this['otp_expires_at'] ?? null,
+            'otp_delivery' => $this['otp_delivery'] ?? null,
         ];
     }
 }

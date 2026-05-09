@@ -40,6 +40,7 @@ class LoginUserAction
                 'two_factor_required' => true,
                 'challenge_id' => $challenge['challenge_id'],
                 'expires_at' => $challenge['expires_at'],
+                'otp_delivery' => $challenge['delivery'] ?? null,
                 'user' => $user->only(['id', 'email', 'first_name', 'last_name']),
             ];
         }

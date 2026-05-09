@@ -4,11 +4,9 @@ namespace App\Actions\AssociationReview;
 
 use App\Actions\Audit\LogAuditAction;
 use App\Enums\MemberApplicationStatus;
+use App\Jobs\SendMemberApprovedAdminNotificationJob;
 use App\Models\MemberApplication;
 use App\Models\User;
-use App\Notifications\System\MemberApplicationRejectedSystemNotification;
-use App\Services\Mail\MailService;
-use App\Services\Notifications\SystemNotificationService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -16,8 +14,6 @@ class RejectMemberApplicationAction
 {
     public function __construct(
         protected LogAuditAction $logAuditAction,
-        protected MailService $mailService,
-        protected SystemNotificationService $systemNotifications,
     ) {
     }
 
@@ -26,11 +22,21 @@ class RejectMemberApplicationAction
         User $reviewer,
         string $reason,
         ?string $ipAddress = null,
-        ?string $userAgent = null
+        ?string $userAgent = null,
+        bool $requiresAffiliationDecision = false
     ): MemberApplication {
         if ($memberApplication->application_status !== MemberApplicationStatus::Submitted->value) {
             throw ValidationException::withMessages([
                 'application_status' => ['Only submitted applications can be rejected.'],
+            ]);
+        }
+
+        if (
+            $requiresAffiliationDecision
+            && ! in_array((string) $memberApplication->affiliation_status, ['validated', 'rejected'], true)
+        ) {
+            throw ValidationException::withMessages([
+                'affiliation_status' => ['Association affiliation decision is required before final rejection.'],
             ]);
         }
 
@@ -44,10 +50,12 @@ class RejectMemberApplicationAction
             $before = $memberApplication->toArray();
 
             $memberApplication->update([
-                'application_status' => MemberApplicationStatus::Rejected->value,
-                'reviewed_at' => now(),
-                'reviewed_by_user_id' => $reviewer->id,
-                'notes' => $reason,
+                'application_status' => MemberApplicationStatus::Submitted->value,
+                'affiliation_status' => 'rejected',
+                'submission_stage' => 'under_admin_review',
+                'affiliation_reviewed_at' => now(),
+                'affiliation_reviewed_by_user_id' => $reviewer->id,
+                'affiliation_review_note' => $reason,
             ]);
 
             $fresh = $memberApplication->fresh([
@@ -58,7 +66,7 @@ class RejectMemberApplicationAction
 
             $this->logAuditAction->execute(
                 $reviewer,
-                'member_application_rejected',
+                'member_affiliation_rejected',
                 $fresh,
                 $before,
                 $fresh->toArray(),
@@ -66,19 +74,7 @@ class RejectMemberApplicationAction
                 $userAgent
             );
 
-            $this->mailService->sendMemberApplicationRejected(
-                $fresh->user,
-                $reason
-            );
-
-            if ($fresh->user) {
-                $this->systemNotifications->send(
-                    $fresh->user,
-                    new MemberApplicationRejectedSystemNotification($reason, $fresh->external_id),
-                    'member_application_rejected',
-                    'Member application rejected'
-                );
-            }
+            SendMemberApprovedAdminNotificationJob::dispatch($fresh, $reviewer, 'rejected')->afterCommit();
 
             return $fresh;
         });

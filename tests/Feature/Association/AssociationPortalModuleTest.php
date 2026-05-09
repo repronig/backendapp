@@ -63,7 +63,7 @@ it('includes member bank details when an association officer views an applicatio
         ->assertJsonPath('data.member_provided_id', 'MEM-ID-001');
 });
 
-it('copies member_provided_id onto the member record when an application is approved', function () {
+it('copies member_provided_id onto the member record when admin approves after affiliation validation', function () {
     ensureRole('admin');
     ensureRole('super_admin');
     [, $association] = actingAsAssociationOfficer();
@@ -81,7 +81,18 @@ it('copies member_provided_id onto the member record when an application is appr
         'member_provided_id' => 'EXT-555',
     ]);
 
-    $this->postJson("/api/v1/association/applications/{$application->id}/approve", [])
+    $this->postJson("/api/v1/association/applications/{$application->id}/validate-affiliation", [])
+        ->assertOk();
+
+    $admin = User::factory()->create([
+        'account_type' => 'admin',
+        'email_verified_at' => now(),
+        'status' => 'active',
+    ]);
+    $admin->assignRole('admin');
+    Sanctum::actingAs($admin);
+
+    $this->postJson("/api/v1/admin/member-applications/{$application->id}/approve", [])
         ->assertOk();
 
     $this->assertDatabaseHas('members', [
@@ -90,7 +101,7 @@ it('copies member_provided_id onto the member record when an application is appr
     ]);
 });
 
-it('allows association officer to request changes on submitted application', function () {
+it('allows association officer to reject affiliation on submitted application', function () {
     [, $association] = actingAsAssociationOfficer();
 
     $application = MemberApplication::factory()->create([
@@ -99,13 +110,13 @@ it('allows association officer to request changes on submitted application', fun
         'notes' => null,
     ]);
 
-    $response = $this->postJson("/api/v1/association/applications/{$application->id}/request-changes", [
-        'comment' => 'Please upload a clearer proof of address document.',
+    $response = $this->postJson("/api/v1/association/applications/{$application->id}/reject-affiliation", [
+        'reason' => 'Affiliation could not be verified from submitted details.',
     ]);
 
     $response->assertOk()
-        ->assertJsonPath('data.application_status', 'changes_requested')
-        ->assertJsonPath('data.notes', 'Please upload a clearer proof of address document.');
+        ->assertJsonPath('data.application_status', 'submitted')
+        ->assertJsonPath('data.affiliation_status', 'rejected');
 });
 
 it('returns forbidden when an association officer has no linked association', function () {

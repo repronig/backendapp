@@ -23,6 +23,7 @@ class MemberApplication extends Model
         'member_author_type',
         'member_author_category',
         'application_status',
+        'affiliation_status',
         'submission_stage',
         'nationality',
         'country_of_residence',
@@ -41,10 +42,13 @@ class MemberApplication extends Model
         'consent_accepted',
         'consent_date',
         'notes',
+        'affiliation_review_note',
         'member_provided_id',
         'submitted_at',
         'reviewed_at',
         'reviewed_by_user_id',
+        'affiliation_reviewed_at',
+        'affiliation_reviewed_by_user_id',
     ];
 
     protected $casts = [
@@ -53,6 +57,7 @@ class MemberApplication extends Model
         'consent_date' => 'date',
         'submitted_at' => 'datetime',
         'reviewed_at' => 'datetime',
+        'affiliation_reviewed_at' => 'datetime',
     ];
 
     protected static function booted(): void

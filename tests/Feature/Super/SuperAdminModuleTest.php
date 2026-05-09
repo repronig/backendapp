@@ -155,6 +155,34 @@ it('rejects default online gateway that is not enabled', function () {
     ])->assertUnprocessable();
 });
 
+it('updates otp channel settings for super admins and blocks disabling all channels', function () {
+    actingAsApiUser('super_admin', ['account_type' => 'super_admin']);
+
+    $this->putJson('/api/v1/super/settings', [
+        'security' => [
+            'password_min_length' => 8,
+            'force_https' => true,
+            'audit_logging_enabled' => true,
+            'otp_email_enabled' => true,
+            'otp_sms_enabled' => true,
+        ],
+    ])
+        ->assertOk()
+        ->assertJsonPath('data.security.otp_email_enabled', true)
+        ->assertJsonPath('data.security.otp_sms_enabled', true);
+
+    $this->putJson('/api/v1/super/settings', [
+        'security' => [
+            'password_min_length' => 8,
+            'force_https' => true,
+            'audit_logging_enabled' => true,
+            'otp_email_enabled' => false,
+            'otp_sms_enabled' => false,
+        ],
+    ])->assertUnprocessable()
+        ->assertJsonValidationErrors(['security.otp_email_enabled']);
+});
+
 it('lists super permissions', function () {
     actingAsApiUser('super_admin', ['account_type' => 'super_admin']);
 

@@ -36,7 +36,7 @@ class AuthController extends BaseApiController
         );
 
         return $this->created(
-            'Member account created successfully. Please verify the OTP sent to your email.',
+            'Member account created successfully. Please verify the OTP sent to your email and SMS.',
             new RegisteredMemberResource($result)
         );
     }
@@ -63,8 +63,9 @@ class AuthController extends BaseApiController
     ): JsonResponse {
         $result = $action->execute($request->validated());
 
-        return $this->success('A new OTP has been sent to your email.', [
+        return $this->success('A new OTP has been sent to your email and SMS.', [
             'expires_at' => $result['expires_at'] ?? null,
+            'otp_delivery' => $result['delivery'] ?? null,
         ]);
     }
 
@@ -90,8 +91,9 @@ class AuthController extends BaseApiController
     ): JsonResponse {
         $result = $action->execute($request->validated());
 
-        return $this->success('A new OTP has been sent to your email.', [
+        return $this->success('A new OTP has been sent to your email and SMS.', [
             'expires_at' => $result['expires_at'] ?? null,
+            'otp_delivery' => $result['delivery'] ?? null,
         ]);
     }
 
@@ -106,7 +108,7 @@ class AuthController extends BaseApiController
         );
 
         return $this->created(
-            'Institution account created successfully. Please verify the OTP sent to your email.',
+            'Institution account created successfully. Please verify the OTP sent to your email and SMS.',
             new RegisteredInstitutionResource($result)
         );
     }

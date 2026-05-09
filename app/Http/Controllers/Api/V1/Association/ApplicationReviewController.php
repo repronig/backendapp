@@ -4,11 +4,9 @@ namespace App\Http\Controllers\Api\V1\Association;
 
 use App\Actions\AssociationReview\ApproveMemberApplicationAction;
 use App\Actions\AssociationReview\RejectMemberApplicationAction;
-use App\Actions\AssociationReview\RequestChangesMemberApplicationAction;
 use App\Http\Controllers\Api\V1\BaseApiController;
 use App\Http\Requests\Api\V1\ApproveMemberApplicationRequest;
 use App\Http\Requests\Api\V1\RejectMemberApplicationRequest;
-use App\Http\Requests\Api\V1\RequestChangesMemberApplicationRequest;
 use App\Http\Resources\Api\V1\MemberApplicationResource;
 use App\Models\Association;
 use App\Models\MemberApplication;
@@ -91,7 +89,7 @@ class ApplicationReviewController extends BaseApiController
         );
 
         return $this->success(
-            'Member application approved successfully.',
+            'Member affiliation validated successfully.',
             new MemberApplicationResource(
                 $application->load(['user', 'association', 'documents'])
             )
@@ -114,30 +112,7 @@ class ApplicationReviewController extends BaseApiController
         );
 
         return $this->success(
-            'Member application rejected successfully.',
-            new MemberApplicationResource(
-                $application->load(['user', 'association', 'documents'])
-            )
-        );
-    }
-
-    public function requestChanges(
-        RequestChangesMemberApplicationRequest $request,
-        MemberApplication $memberApplication,
-        RequestChangesMemberApplicationAction $action
-    ): JsonResponse {
-        $this->authorize('review', $memberApplication);
-
-        $application = $action->execute(
-            $memberApplication,
-            $request->user(),
-            $request->validated('comment'),
-            $request->ip(),
-            $request->userAgent()
-        );
-
-        return $this->success(
-            'Changes requested successfully.',
+            'Member affiliation rejected successfully.',
             new MemberApplicationResource(
                 $application->load(['user', 'association', 'documents'])
             )

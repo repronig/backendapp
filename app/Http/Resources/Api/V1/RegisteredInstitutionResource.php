@@ -17,6 +17,7 @@ class RegisteredInstitutionResource extends JsonResource
                 ? new InstitutionProfileResource($this['institution'])
                 : null,
             'otp_expires_at' => $this['otp_expires_at'] ?? null,
+            'otp_delivery' => $this['otp_delivery'] ?? null,
         ];
     }
 }

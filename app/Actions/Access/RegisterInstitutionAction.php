@@ -89,6 +89,7 @@ class RegisterInstitutionAction
                 'user' => $freshUser,
                 'institution' => $freshInstitution,
                 'otp_expires_at' => $challenge['expires_at'],
+                'otp_delivery' => $challenge['delivery'] ?? null,
             ];
         });
     }

@@ -34,6 +34,12 @@ class RequestChangesMemberApplicationAction
             ]);
         }
 
+        if (! in_array((string) $memberApplication->affiliation_status, ['validated', 'rejected'], true)) {
+            throw ValidationException::withMessages([
+                'affiliation_status' => ['Association affiliation decision is required before requesting changes.'],
+            ]);
+        }
+
         return DB::transaction(function () use (
             $memberApplication,
             $reviewer,

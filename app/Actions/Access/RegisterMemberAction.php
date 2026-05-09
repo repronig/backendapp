@@ -75,6 +75,7 @@ class RegisterMemberAction
                 'user' => $freshUser,
                 'member_application' => $freshApplication,
                 'otp_expires_at' => $challenge['expires_at'],
+                'otp_delivery' => $challenge['delivery'] ?? null,
             ];
         });
     }

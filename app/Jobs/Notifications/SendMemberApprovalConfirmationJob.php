@@ -24,6 +24,7 @@ class SendMemberApprovalConfirmationJob implements ShouldQueue
         }
 
         $mailService->sendMemberApplicationApproved($application->user, $this->memberCode);
+        $mailService->sendMemberWelcome($application->user);
 
         $systemNotifications->send(
             $application->user,

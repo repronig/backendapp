@@ -40,6 +40,7 @@ final class NotificationPreferenceKeys
         'member_application_rejected' => self::APPLICATION_UPDATES,
         'member_application_approved' => self::APPLICATION_UPDATES,
         'member_application_submitted_association' => self::APPLICATION_UPDATES,
+        'member_affiliation_reviewed' => self::APPLICATION_UPDATES,
 
         'work_update_requested' => self::WORK_REVIEWS,
         'work_update_request_reviewed' => self::WORK_REVIEWS,
@@ -67,6 +68,7 @@ final class NotificationPreferenceKeys
         'association_disabled' => self::APPROVAL_UPDATES,
 
         'admin_member_approved' => self::DOCUMENT_UPDATES,
+        'admin_member_affiliation_reviewed' => self::DOCUMENT_UPDATES,
     ];
 
     public static function normalize(string $key): string

@@ -8,7 +8,7 @@ class ApproveMemberApplicationRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->hasRole('association_officer') ?? false;
+        return $this->user()?->hasAnyRole(['association_officer', 'admin', 'super_admin']) ?? false;
     }
 
     public function rules(): array

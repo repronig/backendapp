@@ -13,6 +13,7 @@ class AuthSessionResource extends JsonResource
             'two_factor_required' => (bool) ($this['two_factor_required'] ?? false),
             'challenge_id' => $this['challenge_id'] ?? null,
             'expires_at' => $this['expires_at'] ?? null,
+            'otp_delivery' => $this['otp_delivery'] ?? null,
             'token' => $this['token'] ?? null,
             'token_type' => $this['token_type'] ?? 'Bearer',
             'user' => $this->transformUser(),

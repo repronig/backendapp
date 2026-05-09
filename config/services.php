@@ -49,4 +49,14 @@ return [
         'api_key' => env('ONESIGNAL_API_KEY'),
     ],
 
+    'sms' => [
+        'enabled' => env('SMS_ENABLED', false),
+        'provider' => env('SMS_PROVIDER', 'termii'),
+        'termii' => [
+            'base_url' => env('TERMII_BASE_URL', 'https://api.ng.termii.com'),
+            'api_key' => env('TERMII_API_KEY'),
+            'sender_id' => env('TERMII_SENDER_ID', 'REPRONIG'),
+        ],
+    ],
+
 ];

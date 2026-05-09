@@ -1,6 +1,5 @@
 <?php
 
-use App\Mail\Members\MemberWelcomeMailable;
 use App\Models\Association;
 use App\Models\SecurityChallenge;
 use App\Models\User;
@@ -11,7 +10,7 @@ beforeEach(function () {
     ensureRole('member');
 });
 
-it('registers a member, creates a draft application, and starts an email OTP challenge', function () {
+it('registers a member, creates a draft application, and starts OTP challenge delivery', function () {
     $association = Association::factory()->create();
 
     $response = $this->postJson('/api/v1/auth/register-member', [
@@ -29,7 +28,8 @@ it('registers a member, creates a draft application, and starts an email OTP cha
 
     $response->assertCreated()
         ->assertJsonPath('data.user.email', 'ada.author@example.com')
-        ->assertJsonPath('data.member_application.applicant_type', 'author');
+        ->assertJsonPath('data.member_application.applicant_type', 'author')
+        ->assertJsonPath('data.otp_delivery.email_sent', true);
 
     $this->assertDatabaseHas('users', [
         'email' => 'ada.author@example.com',
@@ -84,7 +84,7 @@ it('verifies a member registration OTP and returns an authenticated session toke
 
     expect($user->fresh()->email_verified_at)->not->toBeNull();
     expect(SecurityChallenge::where('user_id', $user->id)->first()->consumed_at)->not->toBeNull();
-    Mail::assertQueued(MemberWelcomeMailable::class, 1);
+    Mail::assertNothingQueued();
 });
 
 it('rejects an invalid member registration OTP', function () {

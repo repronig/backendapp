@@ -54,6 +54,12 @@ class SubmitMemberApplicationAction
         $memberApplication->update([
             'application_status' => MemberApplicationStatus::Submitted->value,
             'submission_stage' => 'under_association_review',
+            'affiliation_status' => 'pending',
+            'affiliation_review_note' => null,
+            'affiliation_reviewed_at' => null,
+            'affiliation_reviewed_by_user_id' => null,
+            'reviewed_at' => null,
+            'reviewed_by_user_id' => null,
             'submitted_at' => now(),
         ]);
 

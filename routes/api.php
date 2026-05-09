@@ -128,6 +128,7 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'verified', 'role:member'])->gr
     Route::get('member-applications/{memberApplication}', [MemberApplicationController::class, 'show']);
     Route::patch('member-applications/{memberApplication}', [MemberApplicationController::class, 'update']);
     Route::post('member-applications/{memberApplication}/submit', [MemberApplicationController::class, 'submit']);
+    Route::get('member-applications/{memberApplication}/mandate', [MemberApplicationController::class, 'downloadMandate']);
     Route::post('member-applications/{memberApplication}/documents', [MemberApplicationDocumentController::class, 'store']);
     Route::delete('member-applications/{memberApplication}/documents/{document}', [MemberApplicationDocumentController::class, 'destroy']);
     Route::get('member/profile', [MemberProfileController::class, 'show']);
@@ -154,9 +155,8 @@ Route::prefix('v1/association')->middleware(['auth:sanctum', 'verified', 'role:a
     Route::delete('logo', [AssociationLogoController::class, 'destroy']);
     Route::get('applications', [ApplicationReviewController::class, 'index']);
     Route::get('applications/{memberApplication}', [ApplicationReviewController::class, 'show']);
-    Route::post('applications/{memberApplication}/approve', [ApplicationReviewController::class, 'approve']);
-    Route::post('applications/{memberApplication}/reject', [ApplicationReviewController::class, 'reject']);
-    Route::post('applications/{memberApplication}/request-changes', [ApplicationReviewController::class, 'requestChanges']);
+    Route::post('applications/{memberApplication}/validate-affiliation', [ApplicationReviewController::class, 'approve']);
+    Route::post('applications/{memberApplication}/reject-affiliation', [ApplicationReviewController::class, 'reject']);
 });
 
 Route::prefix('v1/institution')->middleware(['auth:sanctum', 'verified', 'role:institution_user'])->group(function () {
@@ -193,6 +193,9 @@ Route::prefix('v1/admin')->middleware(['auth:sanctum', 'verified', 'role:admin|s
     Route::get('finance/summary', AdminFinanceSummaryController::class);
     Route::get('member-applications', [AdminMemberApplicationController::class, 'index']);
     Route::get('member-applications/{memberApplication}', [AdminMemberApplicationController::class, 'show']);
+    Route::post('member-applications/{memberApplication}/approve', [AdminMemberApplicationController::class, 'approve']);
+    Route::post('member-applications/{memberApplication}/request-changes', [AdminMemberApplicationController::class, 'requestChanges']);
+    Route::post('member-applications/{memberApplication}/reject', [AdminMemberApplicationController::class, 'reject']);
     Route::get('members', [AdminMemberController::class, 'index']);
     Route::get('members/export', [AdminMemberController::class, 'export']);
     Route::get('members/{member}', [AdminMemberController::class, 'show']);

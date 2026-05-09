@@ -41,6 +41,11 @@ class UpdateSettingsRequest extends FormRequest
             'documents' => ['sometimes', 'array'],
             'notifications' => ['sometimes', 'array'],
             'security' => ['sometimes', 'array'],
+            'security.password_min_length' => ['sometimes', 'integer', 'min:6', 'max:64'],
+            'security.force_https' => ['sometimes', 'boolean'],
+            'security.audit_logging_enabled' => ['sometimes', 'boolean'],
+            'security.otp_email_enabled' => ['sometimes', 'boolean'],
+            'security.otp_sms_enabled' => ['sometimes', 'boolean'],
         ];
     }
 
@@ -49,6 +54,23 @@ class UpdateSettingsRequest extends FormRequest
         $validator->after(function (Validator $validator): void {
             $licensing = $this->input('licensing');
             if (! is_array($licensing)) {
+                $security = $this->input('security');
+                if (is_array($security)) {
+                    $emailOtp = array_key_exists('otp_email_enabled', $security)
+                        ? (bool) $security['otp_email_enabled']
+                        : true;
+                    $smsOtp = array_key_exists('otp_sms_enabled', $security)
+                        ? (bool) $security['otp_sms_enabled']
+                        : false;
+
+                    if (! $emailOtp && ! $smsOtp) {
+                        $validator->errors()->add(
+                            'security.otp_email_enabled',
+                            'Enable at least one OTP delivery channel (email or SMS).'
+                        );
+                    }
+                }
+
                 return;
             }
 
@@ -79,6 +101,23 @@ class UpdateSettingsRequest extends FormRequest
                     'licensing.default_online_gateway',
                     'Clear the default online gateway when all online payment gateways are disabled.'
                 );
+            }
+
+            $security = $this->input('security');
+            if (is_array($security)) {
+                $emailOtp = array_key_exists('otp_email_enabled', $security)
+                    ? (bool) $security['otp_email_enabled']
+                    : true;
+                $smsOtp = array_key_exists('otp_sms_enabled', $security)
+                    ? (bool) $security['otp_sms_enabled']
+                    : false;
+
+                if (! $emailOtp && ! $smsOtp) {
+                    $validator->errors()->add(
+                        'security.otp_email_enabled',
+                        'Enable at least one OTP delivery channel (email or SMS).'
+                    );
+                }
             }
         });
     }

@@ -5,15 +5,13 @@ namespace App\Actions\Access;
 use App\Actions\Audit\LogAuditAction;
 use App\Models\SecurityChallenge;
 use App\Models\User;
-use App\Services\Mail\MailService;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class VerifyMemberRegistrationOtpAction
 {
     public function __construct(
-        protected LogAuditAction $logAuditAction,
-        protected MailService $mailService
+        protected LogAuditAction $logAuditAction
     ) {}
 
     public function execute(array $data, ?string $ipAddress = null, ?string $userAgent = null): array
@@ -66,8 +64,6 @@ class VerifyMemberRegistrationOtpAction
             $ipAddress,
             $userAgent
         );
-
-        $this->mailService->sendMemberWelcome($freshUser);
 
         return [
             'two_factor_required' => false,
