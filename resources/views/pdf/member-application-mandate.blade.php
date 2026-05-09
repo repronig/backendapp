@@ -230,64 +230,71 @@
             letter-spacing: 0.015em;
         }
 
-        .authorisation-block {
-            margin-top: 40px;
-            text-align: center;
+        .signatures-block {
+            margin-top: 36px;
             page-break-inside: avoid;
         }
 
-        .auth-signature-only {
-            margin: 0 auto 4px;
+        .signatures-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
         }
 
-        .auth-rule {
-            width: 260px;
-            max-width: 85%;
-            height: 0;
-            margin: 10px auto 12px;
-            border: 0;
-            border-top: 1px solid #344054;
-            font-size: 0;
-            line-height: 0;
+        .signatures-table td {
+            width: 50%;
+            vertical-align: top;
+            padding: 12px 14px 8px 0;
         }
 
-        .auth-authorised {
-            font-size: 9.5pt;
+        .signatures-table td.sig-col-right {
+            padding-left: 18px;
+            padding-right: 0;
+            border-left: 1px solid rgba(106, 16, 37, 0.22);
+        }
+
+        .sig-label {
+            font-size: 9.25pt;
             font-weight: 700;
-            color: #1a1a1a;
-            margin: 0 0 10px;
             letter-spacing: 0.02em;
-        }
-
-        .auth-name {
-            font-size: 10pt;
-            font-weight: 700;
-            color: #1a1a1a;
-            margin: 0 0 2px;
-        }
-
-        .auth-role {
-            font-size: 9pt;
-            color: #344054;
-            margin: 0 0 2px;
-        }
-
-        .auth-org {
-            font-size: 9.5pt;
-            font-weight: 700;
             color: #6a1025;
-            letter-spacing: 0.06em;
-            margin: 0 0 4px;
+            margin: 0 0 10px;
         }
 
-        .auth-seal-wrap {
-            margin-top: 14px;
-            text-align: center;
+        .sig-name {
+            font-size: 10.75pt;
+            font-weight: 700;
+            color: #1a0a10;
+            margin: 0 0 6px;
+            line-height: 1.35;
         }
 
-        .auth-seal-wrap img {
-            display: inline-block;
-            vertical-align: middle;
+        .sig-meta {
+            font-size: 9.25pt;
+            color: #344054;
+            margin: 0;
+            line-height: 1.45;
+        }
+
+        .sig-signature {
+            margin: 0 0 8px;
+            text-align: left;
+        }
+
+        .sig-signature img {
+            max-height: 44px;
+            max-width: 200px;
+            width: auto;
+            height: auto;
+            display: block;
+        }
+
+        .sig-role-line {
+            font-size: 9.25pt;
+            font-weight: 600;
+            color: #344054;
+            margin: 8px 0 0;
+            line-height: 1.4;
         }
 
         .footer {
@@ -448,20 +455,29 @@
                     <tr><td class="label">Author category</td><td class="value">{{ $authorCategoryLabel }}</td></tr>
                     <tr><td class="label">Nationality</td><td class="value">{{ $nationality }}</td></tr>  
                     <tr><td class="label">Application status</td><td class="value">{{ $applicationStatusLabel }}</td></tr> 
-                    <tr><td class="label">Consent recorded</td><td class="value">{{ $consentRecordedLine }}</td></tr>
-                    <tr><td class="label">Submitted on</td><td class="value">{{ $submittedOn }}</td></tr>
+                    <tr><td class="label">Consent recorded</td><td class="value">{{ $consentRecordedLine }}</td></tr> 
                     <tr><td class="label">Admin reviewed on</td><td class="value">{{ $reviewedOn }}</td></tr>
                 </table>
             </div>
 
-            <div class="authorisation-block">
-                <div class="auth-signature-only">{!! $executiveDirectorSignatureHtml !!}</div>
-                <div class="auth-rule" role="presentation"></div>
-                <div class="auth-authorised">Authorised.</div>
-                <div class="auth-name">Oluwatosin Akeredolu</div>
-                <div class="auth-role">Executive Director</div>
-                <div class="auth-org">REPRONIG</div>
-                <div class="auth-seal-wrap">{!! $certificateSealHtml !!}</div>
+            <div class="signatures-block">
+                <table class="signatures-table">
+                    <tr>
+                        <td class="sig-col sig-col-left">
+                            <div class="sig-label">Digitally Signed:</div>
+                            <div class="sig-name">{{ $applicantName }}</div>
+                            <div class="sig-meta">Date of consent: {{ $consentDateFormatted }}</div>
+                        </td>
+                        <td class="sig-col sig-col-right">
+                            <div class="sig-label">Digitally Signed:</div>
+                            @if(! empty($executiveDirectorSignatureHtml))
+                                <div class="sig-signature">{!! $executiveDirectorSignatureHtml !!}</div>
+                            @endif
+                            <div class="sig-name">{{ $executiveDirectorName }}</div>
+                            <div class="sig-role-line">Executive Director, REPRONIG</div>
+                        </td>
+                    </tr>
+                </table>
             </div>
 
             <div class="footer">

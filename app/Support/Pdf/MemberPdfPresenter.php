@@ -24,12 +24,12 @@ class MemberPdfPresenter
         $authorType = $this->headline($application->member_author_type);
         $authorCategory = $this->headline($application->member_author_category);
 
-        $consentDate = $application->consent_date
+        $consentDateFormatted = $application->consent_date
             ? Carbon::parse($application->consent_date)->toFormattedDateString()
             : '—';
         $consentLine = ($application->consent_accepted ? 'Yes' : 'No');
-        if ($application->consent_accepted && $consentDate !== '—') {
-            $consentLine .= ' — '.$consentDate;
+        if ($application->consent_accepted && $consentDateFormatted !== '—') {
+            $consentLine .= ' — '.$consentDateFormatted;
         }
 
         return [
@@ -53,6 +53,8 @@ class MemberPdfPresenter
             'affiliationStatusLabel' => $this->headline($application->affiliation_status),
             'applicationStatusLabel' => $this->headline($application->application_status),
             'consentRecordedLine' => $consentLine,
+            'consentDateFormatted' => $consentDateFormatted,
+            'executiveDirectorName' => 'Oluwatosin Akeredolu',
             'submittedOn' => $this->fmtDate($application->submitted_at),
             'reviewedOn' => $this->fmtDate($application->reviewed_at),
             'referenceCode' => 'MM-'.$application->id.'-'.$slugRef,
