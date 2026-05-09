@@ -442,7 +442,7 @@
         <div class="body">
             <div class="doc-title">{{ $documentTitle }}</div>
             <div class="ribbon">{{ $ribbonLine1 }} {{ $ribbonLine2 }}</div>
-            <div><p>&nbsp;;</p><p>&nbsp;;</p><p>&nbsp;;</p></div>
+            <div><p>&nbsp;</p></div>
 
             {{-- <div class="recipient">{{ $applicantName }}</div> --}}
             {{-- <div class="sub-recipient">{{ $associationLine }}</div> --}}
