@@ -14,7 +14,7 @@ it('lists the preference taxonomy keys for both email and system channels', func
         ->assertOk();
 
     $items = collect($response->json('data'));
-    expect($items)->toHaveCount(16);
+    expect($items)->toHaveCount(18);
 
     $keys = $items->pluck('notification_key')->unique()->sort()->values()->all();
     expect($keys)->toEqualCanonicalizing([
@@ -26,6 +26,7 @@ it('lists the preference taxonomy keys for both email and system channels', func
         'approval_updates',
         'general_announcements',
         'document_updates',
+        'support_updates',
     ]);
 
     expect($items->pluck('channel')->unique()->sort()->values()->all())

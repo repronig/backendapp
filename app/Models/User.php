@@ -117,6 +117,11 @@ class User extends Authenticatable implements HasMedia, MustVerifyEmail
         return $this->hasMany(NotificationLog::class);
     }
 
+    public function supportTickets(): HasMany
+    {
+        return $this->hasMany(SupportTicket::class);
+    }
+
     public function uploadedDocuments(): HasMany
     {
         return $this->hasMany(Document::class, 'uploaded_by_user_id');
@@ -186,5 +191,13 @@ class User extends Authenticatable implements HasMedia, MustVerifyEmail
             ->get()
             ->unique('id')
             ->values();
+    }
+
+    /**
+     * SPA path for the staff support inbox (admin layout; super-admins use the same URL).
+     */
+    public function adminSupportTicketsInboxPath(): string
+    {
+        return '/admin/support';
     }
 }

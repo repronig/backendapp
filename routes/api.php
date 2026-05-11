@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\V1\Admin\AdminMemberController;
 use App\Http\Controllers\Api\V1\Admin\AdminPaymentController;
 use App\Http\Controllers\Api\V1\Admin\AdminPushNotificationController;
 use App\Http\Controllers\Api\V1\Admin\AdminReportController;
+use App\Http\Controllers\Api\V1\Admin\AdminSupportTicketController;
 use App\Http\Controllers\Api\V1\Admin\AdminTermsAndConditionController;
 use App\Http\Controllers\Api\V1\Admin\AdminTimelineController;
 use App\Http\Controllers\Api\V1\Admin\AdminUsageDeclarationController;
@@ -66,6 +67,7 @@ use App\Http\Controllers\Api\V1\Super\SuperDashboardController;
 use App\Http\Controllers\Api\V1\Super\SuperIntegrationController;
 use App\Http\Controllers\Api\V1\Super\SuperTimelineController;
 use App\Http\Controllers\Api\V1\Super\UserManagementController;
+use App\Http\Controllers\Api\V1\Support\SupportTicketController;
 use App\Http\Controllers\Api\V1\Webhooks\PaymentWebhookController;
 use App\Http\Controllers\Api\V1\Webhooks\WipoConnectWebhookController;
 use Illuminate\Support\Facades\Route;
@@ -120,6 +122,13 @@ Route::prefix('v1')->middleware(['auth:sanctum'])->group(function () {
     Route::get('email/verify', [EmailVerificationController::class, 'notice']);
     Route::get('email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])->middleware(['signed', 'throttle:email-verification'])->name('verification.verify');
     Route::post('email/verification-notification', [EmailVerificationController::class, 'resend'])->middleware('throttle:email-verification');
+});
+
+Route::prefix('v1')->middleware(['auth:sanctum', 'verified', 'role:member|association_officer|institution_user'])->group(function () {
+    Route::get('support-tickets', [SupportTicketController::class, 'index'])->middleware('throttle:120,1');
+    Route::post('support-tickets', [SupportTicketController::class, 'store'])->middleware('throttle:8,1');
+    Route::get('support-tickets/{supportTicket}', [SupportTicketController::class, 'show'])->middleware('throttle:120,1');
+    Route::post('support-tickets/{supportTicket}/replies', [SupportTicketController::class, 'storeReply'])->middleware('throttle:40,1');
 });
 
 Route::prefix('v1')->middleware(['auth:sanctum', 'verified', 'role:member'])->group(function () {
@@ -189,6 +198,12 @@ Route::prefix('v1/institution')->middleware(['auth:sanctum', 'verified', 'role:i
 });
 
 Route::prefix('v1/admin')->middleware(['auth:sanctum', 'verified', 'role:admin|super_admin'])->group(function () {
+    Route::get('support-tickets', [AdminSupportTicketController::class, 'index'])->middleware('throttle:120,1');
+    Route::get('support-tickets/{supportTicket}', [AdminSupportTicketController::class, 'show'])->middleware('throttle:120,1');
+    Route::patch('support-tickets/{supportTicket}', [AdminSupportTicketController::class, 'update'])->middleware('throttle:60,1');
+    Route::post('support-tickets/{supportTicket}/replies', [AdminSupportTicketController::class, 'storeReply'])->middleware('throttle:60,1');
+    Route::post('support-tickets/{supportTicket}/internal-notes', [AdminSupportTicketController::class, 'storeInternalNote'])->middleware('throttle:60,1');
+
     Route::get('dashboard/summary', [AdminDashboardController::class, 'summary']);
     Route::get('finance/summary', AdminFinanceSummaryController::class);
     Route::get('member-applications', [AdminMemberApplicationController::class, 'index']);

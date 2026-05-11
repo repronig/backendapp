@@ -25,34 +25,43 @@ class SystemNotificationService
             : [];
         $idempotencyKey = $this->buildIdempotencyKey($user, $notification, $notificationKey, $subject, $payload, $context);
 
-        if ($this->deliveryAlreadyLogged($idempotencyKey)) {
+        if ($this->shouldSkipDuplicateSystemDelivery($idempotencyKey)) {
             return;
         }
 
         if (! $this->preferenceResolver->shouldSend($user, $notificationKey, NotificationChannels::SYSTEM)) {
-            NotificationLog::create([
-                'user_id' => $user->id,
-                'notification_key' => $notificationKey,
-                'channel' => NotificationChannels::SYSTEM,
-                'idempotency_key' => $idempotencyKey,
-                'status' => 'skipped',
-                'subject' => $subject,
-                'payload_json' => $payload,
-                'failure_reason' => 'Notification preference disabled for system channel.',
-            ]);
+            NotificationLog::updateOrCreate(
+                ['idempotency_key' => $idempotencyKey],
+                [
+                    'user_id' => $user->id,
+                    'notification_key' => $notificationKey,
+                    'channel' => NotificationChannels::SYSTEM,
+                    'status' => 'skipped',
+                    'subject' => $subject,
+                    'payload_json' => $payload,
+                    'failure_reason' => 'Notification preference disabled for system channel.',
+                    'sent_at' => null,
+                    'failed_at' => null,
+                ]
+            );
 
             return;
         }
 
-        $log = NotificationLog::create([
-            'user_id' => $user->id,
-            'notification_key' => $notificationKey,
-            'channel' => NotificationChannels::SYSTEM,
-            'idempotency_key' => $idempotencyKey,
-            'status' => 'queued',
-            'subject' => $subject,
-            'payload_json' => $payload,
-        ]);
+        $log = NotificationLog::updateOrCreate(
+            ['idempotency_key' => $idempotencyKey],
+            [
+                'user_id' => $user->id,
+                'notification_key' => $notificationKey,
+                'channel' => NotificationChannels::SYSTEM,
+                'status' => 'queued',
+                'subject' => $subject,
+                'payload_json' => $payload,
+                'failure_reason' => null,
+                'failed_at' => null,
+                'sent_at' => null,
+            ]
+        );
 
         try {
             if ($dispatchSynchronously) {
@@ -81,12 +90,31 @@ class SystemNotificationService
         }
     }
 
-    protected function deliveryAlreadyLogged(string $idempotencyKey): bool
+    /**
+     * Block duplicate sends for terminal rows (sent, skipped) and for in-flight rows (queued
+     * updated within the last 30 minutes). Older queued rows are allowed through so a new
+     * attempt can run after a worker crash; failed rows are also allowed so updateOrCreate
+     * can reuse the same idempotency key without a unique constraint violation.
+     */
+    protected function shouldSkipDuplicateSystemDelivery(string $idempotencyKey): bool
     {
-        return NotificationLog::query()
+        $row = NotificationLog::query()
             ->where('idempotency_key', $idempotencyKey)
-            ->whereIn('status', ['queued', 'sent', 'skipped'])
-            ->exists();
+            ->first();
+
+        if ($row === null) {
+            return false;
+        }
+
+        if (in_array($row->status, ['sent', 'skipped'], true)) {
+            return true;
+        }
+
+        if ($row->status === 'queued' && $row->updated_at && $row->updated_at->gt(now()->subMinutes(30))) {
+            return true;
+        }
+
+        return false;
     }
 
     protected function buildIdempotencyKey(
