@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api\V1;
 
+use App\Rules\RecaptchaToken;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -54,7 +55,7 @@ class RegisterInstitutionRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
+        $rules = [
             'organisation_name' => ['required', 'string', 'max:255'],
             'institution_type' => [
                 'required',
@@ -96,6 +97,12 @@ class RegisterInstitutionRequest extends FormRequest
             'declared_branches_count' => ['nullable', 'integer', 'min:0'],
             'accepted_terms' => ['accepted'],
         ];
+
+        if (RecaptchaToken::enabled()) {
+            $rules['recaptcha_token'] = ['required', 'string', new RecaptchaToken];
+        }
+
+        return $rules;
     }
 
     public function messages(): array
