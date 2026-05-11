@@ -7,6 +7,7 @@ use App\Services\Notifications\SystemNotificationService;
 use Illuminate\Mail\Mailable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification as NotificationFacade;
 
 beforeEach(function () {
     ensureRole('member');
@@ -76,4 +77,52 @@ it('deduplicates system deliveries with identical idempotency context', function
         ->where('channel', 'system')
         ->where('notification_key', 'invoice_due_reminder')
         ->count())->toBe(1);
+});
+
+it('retries system notification after the log row was marked failed without a duplicate idempotency error', function () {
+    NotificationFacade::fake();
+
+    $user = User::factory()->create();
+    $service = app(SystemNotificationService::class);
+
+    $notification = new class extends Notification
+    {
+        public function via(object $notifiable): array
+        {
+            return ['database'];
+        }
+
+        public function toArray(object $notifiable): array
+        {
+            return [
+                'type' => 'invoice_due_reminder',
+                'title' => 'Invoice due reminder',
+                'message' => 'Invoice INV-001 is due.',
+            ];
+        }
+    };
+
+    $service->send($user, $notification, 'invoice_due_reminder', 'Invoice due reminder', ['entity_type' => 'invoice', 'entity_id' => 888]);
+
+    $log = NotificationLog::query()
+        ->where('user_id', $user->id)
+        ->where('channel', 'system')
+        ->where('notification_key', 'invoice_due_reminder')
+        ->sole();
+
+    $log->update([
+        'status' => 'failed',
+        'failed_at' => now(),
+        'failure_reason' => 'simulated failure',
+        'sent_at' => null,
+    ]);
+
+    $service->send($user, $notification, 'invoice_due_reminder', 'Invoice due reminder', ['entity_type' => 'invoice', 'entity_id' => 888]);
+
+    expect(NotificationLog::query()
+        ->where('user_id', $user->id)
+        ->where('channel', 'system')
+        ->where('notification_key', 'invoice_due_reminder')
+        ->count())->toBe(1)
+        ->and($log->fresh()->status)->toBe('sent');
 });

@@ -707,10 +707,23 @@ class MailService
 
     protected function deliveryAlreadyLogged(string $idempotencyKey): bool
     {
-        return NotificationLog::query()
+        $row = NotificationLog::query()
             ->where('idempotency_key', $idempotencyKey)
-            ->whereIn('status', ['queued', 'sent', 'skipped'])
-            ->exists();
+            ->first();
+
+        if ($row === null) {
+            return false;
+        }
+
+        if (in_array($row->status, ['sent', 'skipped'], true)) {
+            return true;
+        }
+
+        if ($row->status === 'queued' && $row->updated_at && $row->updated_at->gt(now()->subMinutes(30))) {
+            return true;
+        }
+
+        return false;
     }
 
     protected function buildIdempotencyKey(
