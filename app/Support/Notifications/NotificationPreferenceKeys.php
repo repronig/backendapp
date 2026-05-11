@@ -20,6 +20,9 @@ final class NotificationPreferenceKeys
 
     public const DOCUMENT_UPDATES = 'document_updates';
 
+    /** Portal support desk: ticket lifecycle (submissions, staff replies, admin queue alerts). */
+    public const SUPPORT_UPDATES = 'support_updates';
+
     public const TAXONOMY = [
         self::ACCOUNT_SECURITY,
         self::APPLICATION_UPDATES,
@@ -29,6 +32,7 @@ final class NotificationPreferenceKeys
         self::APPROVAL_UPDATES,
         self::GENERAL_ANNOUNCEMENTS,
         self::DOCUMENT_UPDATES,
+        self::SUPPORT_UPDATES,
     ];
 
     private const EVENT_TO_TAXONOMY = [
@@ -70,6 +74,11 @@ final class NotificationPreferenceKeys
 
         'admin_member_approved' => self::DOCUMENT_UPDATES,
         'admin_member_affiliation_reviewed' => self::DOCUMENT_UPDATES,
+
+        'support_ticket_submitted_user' => self::SUPPORT_UPDATES,
+        'support_ticket_staff_reply' => self::SUPPORT_UPDATES,
+        'support_ticket_submitted_admin' => self::SUPPORT_UPDATES,
+        'support_ticket_user_reply_admin' => self::SUPPORT_UPDATES,
     ];
 
     public static function normalize(string $key): string

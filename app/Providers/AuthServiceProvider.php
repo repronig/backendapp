@@ -11,6 +11,7 @@ use App\Models\LicencePayment;
 use App\Models\Member;
 use App\Models\MemberApplication;
 use App\Models\MemberApplicationDocument;
+use App\Models\SupportTicket;
 use App\Models\UsageDeclaration;
 use App\Models\Work;
 use App\Models\WorkContributor;
@@ -24,6 +25,7 @@ use App\Policies\LicencePolicy;
 use App\Policies\MemberApplicationDocumentPolicy;
 use App\Policies\MemberApplicationPolicy;
 use App\Policies\MemberPolicy;
+use App\Policies\SupportTicketPolicy;
 use App\Policies\UsageDeclarationPolicy;
 use App\Policies\WorkContributorPolicy;
 use App\Policies\WorkFilePolicy;
@@ -49,6 +51,7 @@ class AuthServiceProvider extends ServiceProvider
         Licence::class => LicencePolicy::class,
         LicencePayment::class => LicencePaymentPolicy::class,
         UsageDeclaration::class => UsageDeclarationPolicy::class,
+        SupportTicket::class => SupportTicketPolicy::class,
     ];
 
     public function boot(): void

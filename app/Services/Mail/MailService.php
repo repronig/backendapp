@@ -21,6 +21,10 @@ use App\Mail\Members\AdminMemberApprovedMailable;
 use App\Mail\Members\MemberWelcomeMailable;
 use App\Mail\Payments\PaymentReceivedAdminMailable;
 use App\Mail\Payments\PaymentReceivedMailable;
+use App\Mail\Support\SupportTicketStaffReplyUserMailable;
+use App\Mail\Support\SupportTicketSubmittedAdminMailable;
+use App\Mail\Support\SupportTicketSubmittedUserMailable;
+use App\Mail\Support\SupportTicketUserReplyAdminMailable;
 use App\Mail\Works\WorkReviewDecisionMemberMailable;
 use App\Mail\Works\WorkSubmittedAdminMailable;
 use App\Mail\Works\WorkUpdateRequestedMailable;
@@ -32,6 +36,8 @@ use App\Models\Invoice;
 use App\Models\LicencePayment;
 use App\Models\MemberApplication;
 use App\Models\NotificationLog;
+use App\Models\SupportTicket;
+use App\Models\SupportTicketReply;
 use App\Models\User;
 use App\Models\Work;
 use App\Notifications\Auth\CustomResetPasswordNotification;
@@ -467,6 +473,74 @@ class MailService
             $subject,
             $mailable,
             ['entity_type' => 'work', 'entity_id' => $work->id, 'decision' => $decision]
+        );
+    }
+
+    public function sendSupportTicketSubmittedUser(User $user, SupportTicket $ticket, string $supportInboxPath): void
+    {
+        $email = (string) $user->email;
+        if ($email === '') {
+            return;
+        }
+
+        $this->sendMailable(
+            $user->id,
+            $email,
+            'support_ticket_submitted_user',
+            'We received your support request',
+            new SupportTicketSubmittedUserMailable($ticket, $supportInboxPath),
+            ['entity_type' => 'support_ticket', 'entity_id' => $ticket->id]
+        );
+    }
+
+    public function sendSupportTicketStaffReplyUser(User $user, SupportTicket $ticket, SupportTicketReply $reply, string $supportInboxPath): void
+    {
+        $email = (string) $user->email;
+        if ($email === '') {
+            return;
+        }
+
+        $this->sendMailable(
+            $user->id,
+            $email,
+            'support_ticket_staff_reply',
+            'REPRONIG replied to your support ticket',
+            new SupportTicketStaffReplyUserMailable($ticket, $reply, $supportInboxPath),
+            ['entity_type' => 'support_ticket', 'entity_id' => $ticket->id, 'reply_id' => $reply->id]
+        );
+    }
+
+    public function sendSupportTicketSubmittedAdmin(User $admin, SupportTicket $ticket, string $ticketUrl): void
+    {
+        $email = (string) $admin->email;
+        if ($email === '') {
+            return;
+        }
+
+        $this->sendMailable(
+            $admin->id,
+            $email,
+            'support_ticket_submitted_admin',
+            'New support ticket on REPRONIG',
+            new SupportTicketSubmittedAdminMailable($ticket, $ticketUrl),
+            ['entity_type' => 'support_ticket', 'entity_id' => $ticket->id]
+        );
+    }
+
+    public function sendSupportTicketUserReplyAdmin(User $admin, SupportTicket $ticket, SupportTicketReply $reply, string $ticketUrl): void
+    {
+        $email = (string) $admin->email;
+        if ($email === '') {
+            return;
+        }
+
+        $this->sendMailable(
+            $admin->id,
+            $email,
+            'support_ticket_user_reply_admin',
+            'New reply on a support ticket',
+            new SupportTicketUserReplyAdminMailable($ticket, $reply, $ticketUrl),
+            ['entity_type' => 'support_ticket', 'entity_id' => $ticket->id, 'reply_id' => $reply->id]
         );
     }
 
