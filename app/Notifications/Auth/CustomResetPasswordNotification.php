@@ -2,15 +2,15 @@
 
 namespace App\Notifications\Auth;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class CustomResetPasswordNotification extends Notification implements ShouldQueue
+/**
+ * Sent synchronously so password resets do not depend on queue workers.
+ * (Queued notifications can leave users with “success” but no inbox delivery.)
+ */
+class CustomResetPasswordNotification extends Notification
 {
-    use Queueable;
-
     public function __construct(
         protected string $token
     ) {

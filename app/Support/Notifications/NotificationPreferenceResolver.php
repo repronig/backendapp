@@ -12,6 +12,11 @@ class NotificationPreferenceResolver
             return false;
         }
 
+        // Critical transactional email: must not be blocked by “account security” digests toggles.
+        if ($channel === NotificationChannels::EMAIL && $notificationKey === 'password_reset') {
+            return true;
+        }
+
         $normalized = NotificationPreferenceKeys::normalize($notificationKey);
         $keysToMatch = array_values(array_unique([$notificationKey, $normalized]));
 

@@ -59,4 +59,17 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Google reCAPTCHA (v2 checkbox) — registration spam protection
+    |--------------------------------------------------------------------------
+    |
+    | When "secret" is non-empty, member and institution registration endpoints
+    | require a valid "recaptcha_token" from the frontend (site key is public).
+    |
+    */
+    'recaptcha' => [
+        'secret' => env('RECAPTCHA_SECRET_KEY'),
+    ],
+
 ];

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api\V1;
 
+use App\Rules\RecaptchaToken;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -29,7 +30,7 @@ class RegisterMemberRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
+        $rules = [
             'first_name' => ['required', 'string', 'max:100'],
             'last_name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
@@ -40,6 +41,12 @@ class RegisterMemberRequest extends FormRequest
             'association_id' => ['required', 'integer', 'exists:associations,id'],
             'accepted_terms' => ['accepted'],
         ];
+
+        if (RecaptchaToken::enabled()) {
+            $rules['recaptcha_token'] = ['required', 'string', new RecaptchaToken];
+        }
+
+        return $rules;
     }
 
     public function messages(): array

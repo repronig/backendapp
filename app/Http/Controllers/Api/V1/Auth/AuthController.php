@@ -22,6 +22,7 @@ use App\Http\Resources\Api\V1\RegisteredInstitutionResource;
 use App\Http\Resources\Api\V1\RegisteredMemberResource;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Arr;
 
 class AuthController extends BaseApiController
 {
@@ -30,7 +31,7 @@ class AuthController extends BaseApiController
         RegisterMemberAction $action
     ): JsonResponse {
         $result = $action->execute(
-            $request->validated(),
+            Arr::except($request->validated(), ['recaptcha_token']),
             $request->ip(),
             $request->userAgent()
         );
@@ -102,7 +103,7 @@ class AuthController extends BaseApiController
         RegisterInstitutionAction $action
     ): JsonResponse {
         $result = $action->execute(
-            $request->validated(),
+            Arr::except($request->validated(), ['recaptcha_token']),
             $request->ip(),
             $request->userAgent()
         );
