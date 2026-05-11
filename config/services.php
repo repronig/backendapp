@@ -70,6 +70,8 @@ return [
     */
     'recaptcha' => [
         'secret' => env('RECAPTCHA_SECRET_KEY'),
+        /** Public v2 checkbox site key; exposed in GET /platform-settings when secret is set. */
+        'site_key' => env('RECAPTCHA_SITE_KEY'),
     ],
 
 ];

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Public;
 use App\Http\Controllers\Api\V1\BaseApiController;
 use App\Http\Resources\Api\V1\TermsAndConditionResource;
 use App\Models\TermsAndCondition;
+use App\Rules\RecaptchaToken;
 use App\Support\Payments\PaymentGatewaySettings;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -29,7 +30,16 @@ class PlatformContentController extends BaseApiController
         $terms = $licensing['institution_licensing_terms'] ?? [];
         $bank = $licensing['repronig_bank'] ?? [];
 
+        $recaptchaEnabled = RecaptchaToken::enabled();
+        $recaptchaSiteKey = $recaptchaEnabled ? (string) config('services.recaptcha.site_key', '') : '';
+
         return $this->success('Public platform settings retrieved successfully.', [
+            'recaptcha' => [
+                'registration' => [
+                    'required' => $recaptchaEnabled,
+                    'site_key' => $recaptchaSiteKey !== '' ? $recaptchaSiteKey : null,
+                ],
+            ],
             'licensing' => [
                 'default_currency' => $licensing['default_currency'] ?? 'NGN',
                 'paystack_enabled' => (bool) ($licensing['paystack_enabled'] ?? true),

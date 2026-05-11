@@ -14,6 +14,12 @@ it('exposes platform settings for unauthenticated clients', function () {
         ->assertJsonStructure([
             'message',
             'data' => [
+                'recaptcha' => [
+                    'registration' => [
+                        'required',
+                        'site_key',
+                    ],
+                ],
                 'licensing' => [
                     'default_currency',
                     'paystack_enabled',
