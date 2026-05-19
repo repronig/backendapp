@@ -11,6 +11,50 @@ beforeEach(function () {
     ensureRole('member');
 });
 
+it('registers a member without a phone number', function () {
+    $association = Association::factory()->create();
+
+    $response = $this->postJson('/api/v1/auth/register-member', [
+        'first_name' => 'No',
+        'last_name' => 'Phone',
+        'email' => 'no.phone@example.com',
+        'nationality' => 'Nigerian',
+        'password' => 'Password123!',
+        'password_confirmation' => 'Password123!',
+        'applicant_type' => 'author',
+        'association_id' => $association->id,
+        'accepted_terms' => true,
+    ]);
+
+    $response->assertCreated()
+        ->assertJsonPath('data.user.email', 'no.phone@example.com');
+
+    $this->assertDatabaseHas('users', [
+        'email' => 'no.phone@example.com',
+        'phone' => null,
+    ]);
+});
+
+it('rejects member registration when phone is already taken', function () {
+    User::factory()->create(['phone' => '+2348012345678']);
+    $association = Association::factory()->create();
+
+    $response = $this->postJson('/api/v1/auth/register-member', [
+        'first_name' => 'Dup',
+        'last_name' => 'Phone',
+        'email' => 'dup.phone@example.com',
+        'phone' => '+2348012345678',
+        'password' => 'Password123!',
+        'password_confirmation' => 'Password123!',
+        'applicant_type' => 'author',
+        'association_id' => $association->id,
+        'accepted_terms' => true,
+    ]);
+
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors(['phone']);
+});
+
 it('registers a member, creates a draft application, and starts OTP challenge delivery', function () {
     $association = Association::factory()->create();
 

@@ -28,7 +28,7 @@ class RegisterMemberAction
                 'first_name' => $data['first_name'],
                 'last_name' => $data['last_name'],
                 'email' => $data['email'],
-                'phone' => $data['phone'],
+                'phone' => $data['phone'] ?? null,
                 'nationality' => $data['nationality'] ?? null,
                 'password' => Hash::make($data['password']),
                 'account_type' => 'member',
