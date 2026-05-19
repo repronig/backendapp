@@ -23,6 +23,9 @@ class RegisterMemberRequest extends FormRequest
 
         if (isset($data['phone']) && is_string($data['phone'])) {
             $data['phone'] = trim($data['phone']);
+            if ($data['phone'] === '') {
+                $data['phone'] = null;
+            }
         }
 
         $this->replace($data);
@@ -34,7 +37,7 @@ class RegisterMemberRequest extends FormRequest
             'first_name' => ['required', 'string', 'max:100'],
             'last_name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
-            'phone' => ['required', 'string', 'max:30', Rule::unique('users', 'phone')],
+            'phone' => ['nullable', 'string', 'max:30', Rule::unique('users', 'phone')],
             'nationality' => ['nullable', 'string', 'max:100'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'applicant_type' => ['required', 'in:author,publisher,corporate_publisher'],
