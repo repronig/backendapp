@@ -98,7 +98,7 @@ class RegisterInstitutionRequest extends FormRequest
             'accepted_terms' => ['accepted'],
         ];
 
-        if (RecaptchaToken::enabled()) {
+        if (RecaptchaToken::requiredForRegistration($this)) {
             $rules['recaptcha_token'] = ['required', 'string', new RecaptchaToken];
         }
 

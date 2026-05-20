@@ -30,13 +30,14 @@ class PlatformContentController extends BaseApiController
         $terms = $licensing['institution_licensing_terms'] ?? [];
         $bank = $licensing['repronig_bank'] ?? [];
 
-        $recaptchaEnabled = RecaptchaToken::enabled();
-        $recaptchaSiteKey = $recaptchaEnabled ? (string) config('services.recaptcha.site_key', '') : '';
+        $recaptchaConfigured = RecaptchaToken::enabled();
+        $recaptchaSiteKey = $recaptchaConfigured ? (string) config('services.recaptcha.site_key', '') : '';
 
         return $this->success('Public platform settings retrieved successfully.', [
             'recaptcha' => [
                 'registration' => [
-                    'required' => $recaptchaEnabled,
+                    /** True when the web app should collect reCAPTCHA (secret configured; enforced with X-Repronig-Client: web). */
+                    'required' => $recaptchaConfigured,
                     'site_key' => $recaptchaSiteKey !== '' ? $recaptchaSiteKey : null,
                 ],
             ],

@@ -64,8 +64,9 @@ return [
     | Google reCAPTCHA (v2 checkbox) — registration spam protection
     |--------------------------------------------------------------------------
     |
-    | When "secret" is non-empty, member and institution registration endpoints
-    | require a valid "recaptcha_token" from the frontend (site key is public).
+    | When "secret" is non-empty, member and institution registration require
+    | recaptcha_token only from the web app (browser Origin/Referer or X-Repronig-Client: web).
+    | Native mobile apps omit reCAPTCHA by design and need no app update.
     |
     */
     'recaptcha' => [
