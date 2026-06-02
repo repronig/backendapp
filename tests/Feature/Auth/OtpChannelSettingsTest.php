@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Association;
 use App\Models\Setting;
 use App\Services\Sms\SmsOtpService;
 use Illuminate\Support\Facades\Mail;
@@ -17,7 +16,7 @@ it('sends otp via email only when sms channel is disabled in platform settings',
         ['value' => ['otp_email_enabled' => true, 'otp_sms_enabled' => false]]
     );
 
-    $association = Association::factory()->create();
+    $association = associationForApplicantType('author');
 
     $this->postJson('/api/v1/auth/register-member', [
         'first_name' => 'Email',
@@ -47,7 +46,7 @@ it('sends otp via sms only when email channel is disabled in platform settings',
         $mock->shouldReceive('sendOtp')->once()->andReturn(true);
     });
 
-    $association = Association::factory()->create();
+    $association = associationForApplicantType('author');
 
     $this->postJson('/api/v1/auth/register-member', [
         'first_name' => 'Sms',

@@ -8,6 +8,21 @@ List and export endpoints that accept a `search` query parameter use PostgreSQL 
 
 **Pagination:** List endpoints use `BaseApiController::perPage()`; only **`10`, `20`, `50`, and `100`** are accepted for `per_page`. Any other value falls back to the controller default (often `15`).
 
+### Local development (with `app.repronig` on port 5173)
+
+1. Copy `.env.example` → `.env`, configure PostgreSQL, run `php artisan key:generate` and `php artisan migrate --seed`.
+2. Start the API on port **8010** (Homestead often uses **8000** for nginx — do not use 8000 unless you know it is Laravel):
+
+   ```bash
+   php artisan serve --host=127.0.0.1 --port=8010
+   ```
+
+3. In `app.repronig`, use `VITE_API_BASE_URL=/api/v1` and `VITE_API_PROXY_TARGET=http://127.0.0.1:8010`, then **restart** `npm run dev` (Vite only reads proxy config at startup).
+
+Requests from the browser go to `http://localhost:5173/api/v1/...` and Vite forwards them to Laravel.
+
+If **`https://api.repronig.local` returns nginx 404**, the Homestead/Valet site root is usually wrong (must be this app’s **`public`** directory). See `docs/local-nginx-homestead.example.conf`.
+
 **PostgreSQL vs SQLite:** Some migrations add **CHECK** constraints only on PostgreSQL (for example `licence_payments.payment_status`). SQLite test runs will not enforce those rules at the database layer; use PostgreSQL to validate constraint behaviour.
 
 **PDF generation:** Institution certificate and payment receipt routes use **DomPDF** (`barryvdh/laravel-dompdf`). Ensure production PHP has typical extensions (**mbstring**, **dom**, **xml**); add **GD** or **Imagick** if certificate templates embed images or custom fonts.
