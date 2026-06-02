@@ -146,3 +146,16 @@ it('does not submit a member application until proof of id and proof of address 
             ->where('user_id', $officer->id)
             ->exists())->toBeTrue();
 });
+
+it('does not include a thank-you line in the member application submitted association email', function () {
+    $application = MemberApplication::factory()->create([
+        'application_status' => 'submitted',
+        'submission_stage' => 'under_association_review',
+    ]);
+
+    $html = (new MemberApplicationSubmittedAssociationMailable($application))->render();
+
+    expect($html)
+        ->not->toMatch('/thank\s+you/i')
+        ->and($html)->toContain('Verify Affiliation');
+});

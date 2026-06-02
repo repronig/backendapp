@@ -33,13 +33,35 @@ function actingAsApiUser(string $role, array $attributes = []): User
     return $user;
 }
 
+/**
+ * Creates an association whose code is valid for the given applicant type.
+ */
+function associationForApplicantType(string $applicantType = 'author'): Association
+{
+    $code = match ($applicantType) {
+        'publisher', 'corporate_publisher' => 'NPA',
+        'artist' => 'SNA',
+        default => 'ANA',
+    };
+
+    return Association::factory()->create([
+        'code' => $code,
+        'status' => 'active',
+        'is_enabled' => true,
+    ]);
+}
+
 function validMemberApplicationPayload(array $overrides = []): array
 {
+    $applicantType = $overrides['applicant_type'] ?? 'author';
+    $associationId = $overrides['association_id']
+        ?? associationForApplicantType($applicantType)->id;
+
     return array_merge([
         'first_name' => 'Ada',
         'last_name' => 'Author',
-        'applicant_type' => 'author',
-        'association_id' => Association::factory()->create()->id,
+        'applicant_type' => $applicantType,
+        'association_id' => $associationId,
         'member_author_type' => 'individual',
         'member_author_category' => 'author',
         'nationality' => 'Nigerian',

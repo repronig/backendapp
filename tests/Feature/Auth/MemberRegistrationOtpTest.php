@@ -12,7 +12,7 @@ beforeEach(function () {
 });
 
 it('registers a member without a phone number', function () {
-    $association = Association::factory()->create();
+    $association = associationForApplicantType('author');
 
     $response = $this->postJson('/api/v1/auth/register-member', [
         'first_name' => 'No',
@@ -37,7 +37,7 @@ it('registers a member without a phone number', function () {
 
 it('rejects member registration when phone is already taken', function () {
     User::factory()->create(['phone' => '+2348012345678']);
-    $association = Association::factory()->create();
+    $association = associationForApplicantType('author');
 
     $response = $this->postJson('/api/v1/auth/register-member', [
         'first_name' => 'Dup',
@@ -56,7 +56,7 @@ it('rejects member registration when phone is already taken', function () {
 });
 
 it('registers a member, creates a draft application, and starts OTP challenge delivery', function () {
-    $association = Association::factory()->create();
+    $association = associationForApplicantType('author');
 
     $response = $this->postJson('/api/v1/auth/register-member', [
         'first_name' => 'Ada',

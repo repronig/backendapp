@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Api\V1;
 
+use App\Rules\ApplicantAssociationMatchesType;
 use App\Rules\RecaptchaToken;
+use App\Support\Membership\ApplicantAssociationMap;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -40,8 +42,8 @@ class RegisterMemberRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:30', Rule::unique('users', 'phone')],
             'nationality' => ['nullable', 'string', 'max:100'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'applicant_type' => ['required', 'in:author,publisher,corporate_publisher'],
-            'association_id' => ['required', 'integer', 'exists:associations,id'],
+            'applicant_type' => ['required', Rule::in(ApplicantAssociationMap::APPLICANT_TYPES)],
+            'association_id' => ['required', 'integer', 'exists:associations,id', new ApplicantAssociationMatchesType],
             'accepted_terms' => ['accepted'],
         ];
 

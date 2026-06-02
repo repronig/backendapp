@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\Admin\AdminAssociationGovernanceController;
+use App\Http\Controllers\Api\V1\Admin\AdminAssociationOfficerController;
 use App\Http\Controllers\Api\V1\Admin\AdminBoardReportController;
 use App\Http\Controllers\Api\V1\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\V1\Admin\AdminDocumentController;
@@ -264,6 +265,9 @@ Route::prefix('v1/admin')->middleware(['auth:sanctum', 'verified', 'role:admin|s
     Route::post('associations/{association}/disable', [AdminAssociationGovernanceController::class, 'disable'])->middleware('security.confirmed');
     Route::post('associations/{association}/enable', [AdminAssociationGovernanceController::class, 'enable'])->middleware('security.confirmed');
     Route::post('associations/{association}/logo', [AdminAssociationGovernanceController::class, 'uploadLogo']);
+    Route::get('associations/{association}/officers', [AdminAssociationOfficerController::class, 'index']);
+    Route::patch('associations/{association}/officers/{user}', [AdminAssociationOfficerController::class, 'update'])
+        ->middleware('security.confirmed');
     Route::get('usage-declarations', [AdminUsageDeclarationController::class, 'index']);
     Route::get('usage-declarations/{usageDeclaration}', [AdminUsageDeclarationController::class, 'show']);
     Route::get('reports/members', [AdminReportController::class, 'members']);

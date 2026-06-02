@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Association;
 use App\Rules\RecaptchaToken;
 use Illuminate\Support\Facades\Http;
 
@@ -19,7 +18,7 @@ it('rejects web member registration when recaptcha is enabled and google rejects
         'https://www.google.com/recaptcha/api/siteverify' => Http::response(['success' => false], 200),
     ]);
 
-    $association = Association::factory()->create();
+    $association = associationForApplicantType('author');
 
     $response = $this->withHeader('Origin', 'https://app.repronig.org')
         ->postJson('/api/v1/auth/register-member', [
@@ -42,7 +41,7 @@ it('rejects web member registration when recaptcha is enabled and google rejects
 it('rejects web member registration when recaptcha is enabled and token is missing', function () {
     config(['services.recaptcha.secret' => 'test-secret']);
 
-    $association = Association::factory()->create();
+    $association = associationForApplicantType('author');
 
     $response = $this->withHeader(RecaptchaToken::WEB_CLIENT_HEADER, RecaptchaToken::WEB_CLIENT_VALUE)
         ->postJson('/api/v1/auth/register-member', [
@@ -66,7 +65,7 @@ it('allows native-style member registration without recaptcha when secret is con
 
     Http::fake();
 
-    $association = Association::factory()->create();
+    $association = associationForApplicantType('author');
 
     $response = $this->postJson('/api/v1/auth/register-member', [
         'first_name' => 'Mobile',
