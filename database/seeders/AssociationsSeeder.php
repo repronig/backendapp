@@ -30,10 +30,10 @@ class AssociationsSeeder extends Seeder
                 'status' => 'active',
             ],
             [
-                'name' => 'Association of Non Fiction Authors of Nigeria',
-                'code' => 'ANFAAN',
+                'name' => 'Association of Academic and Non-Fiction Authors of Nigeria',
+                'code' => 'AANFAN',
                 'type' => 'non_fiction_author_association',
-                'description' => 'Association for non-fiction authors in Nigeria.',
+                'description' => 'Association for academic and non-fiction authors in Nigeria.',
                 'contact_email' => 'info@anfaan.org',
                 'contact_phone' => '+2348000000003',
                 'status' => 'active',
