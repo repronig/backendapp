@@ -71,25 +71,25 @@ class DemoUsersSeeder extends Seeder
                 ],
             ]);
 
-            // ANFAAN
-            $association_anfaan = Association::query()->where('code', 'ANFAAN')->firstOrFail();
+            // AANFAN
+            $association_aanfan = Association::query()->where('code', 'AANFAN')->firstOrFail();
 
-            $officer_anfaan = User::query()->updateOrCreate(
+            $officer_aanfan = User::query()->updateOrCreate(
                 ['email' => 'info@anfaan.org'],
                 [
                     'first_name' => 'Gbenga',
                     'last_name' => 'Kolawole',
                     'phone' => '+2348000000013',
-                    'password' => Hash::make('ANFAAN@2026!rep'),
+                    'password' => Hash::make('AANFAN@2026!rep'),
                     'account_type' => 'association_officer',
                     'status' => 'active',
                     'email_verified_at' => now(),
                 ]
             );
-            $officer_anfaan->syncRoles(['association_officer']);
+            $officer_aanfan->syncRoles(['association_officer']);
 
-            $association_anfaan->users()->syncWithoutDetaching([
-                $officer_anfaan->id => [
+            $association_aanfan->users()->syncWithoutDetaching([
+                $officer_aanfan->id => [
                     'designation_title' => 'Secretary',
                     'is_active' => true,
                 ],

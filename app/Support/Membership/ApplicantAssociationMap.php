@@ -11,7 +11,7 @@ final class ApplicantAssociationMap
     public const APPLICANT_TYPES = ['author', 'publisher', 'corporate_publisher', 'artist'];
 
     /** @var list<string> */
-    public const AUTHOR_CODES = ['ANA', 'ANFAAN'];
+    public const AUTHOR_CODES = ['ANA', 'AANFAN'];
 
     /** @var list<string> */
     public const PUBLISHER_CODES = ['NPA'];
