@@ -49,6 +49,14 @@ class SubmitMemberApplicationAction
             ]);
         }
 
+        $memberApplication->loadMissing('user');
+
+        if (blank($memberApplication->user?->phone)) {
+            throw ValidationException::withMessages([
+                'phone' => ['Phone number is required before submitting your mandate.'],
+            ]);
+        }
+
         $before = $memberApplication->toArray();
 
         $memberApplication->update([

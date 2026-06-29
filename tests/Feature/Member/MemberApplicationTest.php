@@ -147,6 +147,34 @@ it('does not submit a member application until proof of id and proof of address 
             ->exists())->toBeTrue();
 });
 
+it('does not submit a member application without a phone number on the user account', function () {
+    Mail::fake();
+
+    $user = actingAsApiUser('member', [
+        'account_type' => 'member',
+        'phone' => null,
+    ]);
+    $application = MemberApplication::factory()->create([
+        'user_id' => $user->id,
+        'application_status' => 'draft',
+        'consent_accepted' => true,
+        'consent_date' => now()->toDateString(),
+    ]);
+
+    MemberApplicationDocument::factory()->forApplication($application)->create([
+        'document_type' => 'proof_of_id',
+        'uploaded_by_user_id' => $user->id,
+    ]);
+    MemberApplicationDocument::factory()->forApplication($application)->create([
+        'document_type' => 'proof_of_address',
+        'uploaded_by_user_id' => $user->id,
+    ]);
+
+    $this->postJson("/api/v1/member-applications/{$application->id}/submit")
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['phone']);
+});
+
 it('does not include a thank-you line in the member application submitted association email', function () {
     $application = MemberApplication::factory()->create([
         'application_status' => 'submitted',

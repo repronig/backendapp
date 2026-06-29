@@ -66,4 +66,9 @@ class MemberApplicationPolicy
                 ->where('association_user.is_active', true)
                 ->exists();
     }
+
+    public function delete(User $user, MemberApplication $memberApplication): bool
+    {
+        return false;
+    }
 }

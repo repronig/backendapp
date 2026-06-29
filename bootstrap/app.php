@@ -36,6 +36,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => RoleMiddleware::class,
             'security.confirmed' => RequireRecentSecurityConfirmation::class,
+            'member_work_import.enabled' => \App\Http\Middleware\EnsureMemberWorkImportEnabled::class,
         ]);
     })
     ->withSchedule(function (Schedule $schedule): void {

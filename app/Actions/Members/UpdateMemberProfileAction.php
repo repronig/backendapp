@@ -29,7 +29,7 @@ class UpdateMemberProfileAction
         }
 
         $userNameFields = [];
-        foreach (['first_name', 'last_name'] as $key) {
+        foreach (['first_name', 'last_name', 'phone'] as $key) {
             if (array_key_exists($key, $data)) {
                 $userNameFields[$key] = $data[$key];
                 unset($data[$key]);

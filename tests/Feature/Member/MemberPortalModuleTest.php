@@ -59,11 +59,22 @@ it('allows an approved member to update member_provided_id via profile', functio
 
     $this->patchJson('/api/v1/member/profile', [
         'member_provided_id' => 'UPDATED-ID-42',
+        'phone' => $member->user->phone,
     ])
         ->assertOk()
         ->assertJsonPath('data.member_provided_id', 'UPDATED-ID-42');
 
     expect($member->fresh()->member_provided_id)->toBe('UPDATED-ID-42');
+});
+
+it('requires phone when updating member profile', function () {
+    actingAsApprovedMember();
+
+    $this->patchJson('/api/v1/member/profile', [
+        'first_name' => 'Updated',
+    ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['phone']);
 });
 
 it('returns member dashboard summary', function () {

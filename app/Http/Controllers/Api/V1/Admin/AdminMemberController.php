@@ -87,4 +87,20 @@ class AdminMemberController extends BaseApiController
             fclose($handle);
         }, $filename, ['Content-Type' => 'text/csv']);
     }
+
+    public function destroy(
+        Member $member,
+        \App\Actions\Admin\DeleteMemberPortalUserAction $action,
+        \Illuminate\Http\Request $request
+    ): JsonResponse {
+        $member->loadMissing('user');
+        $user = $member->user;
+        abort_unless($user, 404, 'Member user account not found.');
+
+        $this->authorize('delete', $member);
+
+        $action->execute($user, $request->user(), $request->ip(), $request->userAgent());
+
+        return $this->success('Member and associated records deleted successfully.');
+    }
 }

@@ -17,6 +17,8 @@ class UpdateSettingsRequest extends FormRequest
         return [
             'app' => ['sometimes', 'array'],
             'membership' => ['sometimes', 'array'],
+            'membership.member_work_bulk_import_enabled' => ['sometimes', 'boolean'],
+            'membership.member_work_bulk_import_tutorial_video_url' => ['sometimes', 'nullable', 'string', 'max:500', 'url'],
             'licensing' => ['sometimes', 'array'],
             'licensing.allow_licence_application' => ['sometimes', 'boolean'],
             'licensing.blanket_annual_licensing' => ['sometimes', 'boolean'],

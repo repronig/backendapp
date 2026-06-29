@@ -126,4 +126,16 @@ class AdminWorkController extends BaseApiController
             )
         );
     }
+
+    public function destroy(
+        Work $work,
+        \App\Actions\Works\DeleteWorkAction $action,
+        \Illuminate\Http\Request $request
+    ): JsonResponse {
+        $this->authorize('delete', $work);
+
+        $action->execute($work, $request->user(), $request->ip(), $request->userAgent());
+
+        return $this->success('Work deleted successfully.');
+    }
 }
