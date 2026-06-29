@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\BaseApiController;
 use App\Http\Resources\Api\V1\TermsAndConditionResource;
 use App\Models\TermsAndCondition;
 use App\Rules\RecaptchaToken;
+use App\Support\MemberWorkImports\MemberWorkImportSettings;
 use App\Support\Payments\PaymentGatewaySettings;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -24,8 +25,10 @@ class PlatformContentController extends BaseApiController
         return $this->success('Terms and conditions retrieved successfully.', $terms ? new TermsAndConditionResource($terms) : null);
     }
 
-    public function settings(PaymentGatewaySettings $paymentGatewaySettings): JsonResponse
-    {
+    public function settings(
+        PaymentGatewaySettings $paymentGatewaySettings,
+        MemberWorkImportSettings $memberWorkImportSettings,
+    ): JsonResponse {
         $licensing = $paymentGatewaySettings->licensing();
         $terms = $licensing['institution_licensing_terms'] ?? [];
         $bank = $licensing['repronig_bank'] ?? [];
@@ -34,6 +37,10 @@ class PlatformContentController extends BaseApiController
         $recaptchaSiteKey = $recaptchaConfigured ? (string) config('services.recaptcha.site_key', '') : '';
 
         return $this->success('Public platform settings retrieved successfully.', [
+            'features' => [
+                'member_work_bulk_import_enabled' => $memberWorkImportSettings->enabled(),
+                'member_work_bulk_import_tutorial_video_url' => $memberWorkImportSettings->tutorialVideoUrl(),
+            ],
             'recaptcha' => [
                 'registration' => [
                     /** True when the web app should collect reCAPTCHA (secret configured; enforced with X-Repronig-Client: web). */

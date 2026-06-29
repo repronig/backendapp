@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\Association;
 use App\Models\Document;
+use App\Models\ImportBatch;
 use App\Models\Institution;
 use App\Models\InstitutionAnnualDeclaration;
 use App\Models\Licence;
@@ -25,6 +26,7 @@ use App\Policies\LicencePolicy;
 use App\Policies\MemberApplicationDocumentPolicy;
 use App\Policies\MemberApplicationPolicy;
 use App\Policies\MemberPolicy;
+use App\Policies\MemberWorkImportBatchPolicy;
 use App\Policies\SupportTicketPolicy;
 use App\Policies\UsageDeclarationPolicy;
 use App\Policies\WorkContributorPolicy;
@@ -40,6 +42,7 @@ class AuthServiceProvider extends ServiceProvider
     protected $policies = [
         Association::class => AssociationPolicy::class,
         Document::class => DocumentPolicy::class,
+        ImportBatch::class => MemberWorkImportBatchPolicy::class,
         Member::class => MemberPolicy::class,
         MemberApplication::class => MemberApplicationPolicy::class,
         MemberApplicationDocument::class => MemberApplicationDocumentPolicy::class,

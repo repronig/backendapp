@@ -127,4 +127,20 @@ class AdminMemberApplicationController extends BaseApiController
             new MemberApplicationResource($application->load(['user.roles', 'association', 'documents']))
         );
     }
+
+    public function destroy(
+        MemberApplication $memberApplication,
+        \App\Actions\Admin\DeleteMemberPortalUserAction $action,
+        \Illuminate\Http\Request $request
+    ): JsonResponse {
+        $memberApplication->loadMissing('user');
+        $user = $memberApplication->user;
+        abort_unless($user, 404, 'Application user account not found.');
+
+        $this->authorize('delete', $memberApplication);
+
+        $action->execute($user, $request->user(), $request->ip(), $request->userAgent());
+
+        return $this->success('Member application and associated records deleted successfully.');
+    }
 }

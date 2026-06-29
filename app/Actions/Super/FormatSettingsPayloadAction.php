@@ -20,6 +20,8 @@ class FormatSettingsPayloadAction
                 'require_association_selection' => true,
                 'require_kyc' => true,
                 'require_proof_of_address' => true,
+                'member_work_bulk_import_enabled' => true,
+                'member_work_bulk_import_tutorial_video_url' => null,
                 'accepted_id_types' => [
                     'proof_of_id',
                     'proof_of_address',

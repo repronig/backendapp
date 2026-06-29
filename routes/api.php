@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\V1\Admin\AdminInvoiceController;
 use App\Http\Controllers\Api\V1\Admin\AdminLicenceController;
 use App\Http\Controllers\Api\V1\Admin\AdminLicensingFeePlanController;
 use App\Http\Controllers\Api\V1\Admin\AdminMemberApplicationController;
+use App\Http\Controllers\Api\V1\Admin\AdminMemberWorkImportSettingsController;
 use App\Http\Controllers\Api\V1\Admin\AdminMemberController;
 use App\Http\Controllers\Api\V1\Admin\AdminPaymentController;
 use App\Http\Controllers\Api\V1\Admin\AdminPushNotificationController;
@@ -51,6 +52,7 @@ use App\Http\Controllers\Api\V1\Institution\UsageDeclarationController as Instit
 use App\Http\Controllers\Api\V1\Member\MemberApplicationController;
 use App\Http\Controllers\Api\V1\Member\MemberApplicationDocumentController;
 use App\Http\Controllers\Api\V1\Member\MemberProfileController;
+use App\Http\Controllers\Api\V1\Member\MemberWorkImportController;
 use App\Http\Controllers\Api\V1\Member\WorkContributorController;
 use App\Http\Controllers\Api\V1\Member\WorkController;
 use App\Http\Controllers\Api\V1\Member\WorkFileController;
@@ -155,6 +157,23 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'verified', 'role:member'])->gr
     Route::delete('works/{work}/contributors/{contributor}', [WorkContributorController::class, 'destroy']);
     Route::post('works/{work}/files', [WorkFileController::class, 'store']);
     Route::delete('works/{work}/files/{file}', [WorkFileController::class, 'destroy']);
+
+    $memberWorkImportUploadsPerHour = (int) config('member_work_imports.uploads_per_hour', 5);
+    $memberWorkImportSubmitPerHour = (int) config('member_work_imports.submit_ready_per_hour', 1);
+
+    Route::middleware('member_work_import.enabled')->group(function () use ($memberWorkImportUploadsPerHour, $memberWorkImportSubmitPerHour) {
+        Route::get('work-import-batches/template', [MemberWorkImportController::class, 'template']);
+        Route::get('work-import-batches/column-reference', [MemberWorkImportController::class, 'columnReference']);
+        Route::get('work-import-batches', [MemberWorkImportController::class, 'index']);
+        Route::post('work-import-batches', [MemberWorkImportController::class, 'store'])->middleware('throttle:'.$memberWorkImportUploadsPerHour.',60');
+        Route::get('work-import-batches/{workImportBatch}', [MemberWorkImportController::class, 'show']);
+        Route::get('work-import-batches/{workImportBatch}/failures', [MemberWorkImportController::class, 'failures']);
+        Route::get('work-import-batches/{workImportBatch}/items', [MemberWorkImportController::class, 'items']);
+        Route::get('work-import-batches/{workImportBatch}/error-report', [MemberWorkImportController::class, 'errorReport']);
+        Route::post('work-import-batches/{workImportBatch}/process', [MemberWorkImportController::class, 'process']);
+        Route::post('work-import-batches/{workImportBatch}/files', [MemberWorkImportController::class, 'uploadFiles']);
+        Route::post('work-import-batches/{workImportBatch}/submit-ready', [MemberWorkImportController::class, 'submitReady'])->middleware('throttle:'.$memberWorkImportSubmitPerHour.',60');
+    });
 });
 
 Route::prefix('v1/association')->middleware(['auth:sanctum', 'verified', 'role:association_officer'])->group(function () {
@@ -212,12 +231,17 @@ Route::prefix('v1/admin')->middleware(['auth:sanctum', 'verified', 'role:admin|s
     Route::post('member-applications/{memberApplication}/approve', [AdminMemberApplicationController::class, 'approve']);
     Route::post('member-applications/{memberApplication}/request-changes', [AdminMemberApplicationController::class, 'requestChanges']);
     Route::post('member-applications/{memberApplication}/reject', [AdminMemberApplicationController::class, 'reject']);
+    Route::delete('member-applications/{memberApplication}', [AdminMemberApplicationController::class, 'destroy'])->middleware('security.confirmed');
     Route::get('members', [AdminMemberController::class, 'index']);
     Route::get('members/export', [AdminMemberController::class, 'export']);
     Route::get('members/{member}', [AdminMemberController::class, 'show']);
+    Route::delete('members/{member}', [AdminMemberController::class, 'destroy'])->middleware('security.confirmed');
     Route::get('works', [AdminWorkController::class, 'index']);
+    Route::get('works/bulk-import-settings', [AdminMemberWorkImportSettingsController::class, 'show']);
+    Route::put('works/bulk-import-settings', [AdminMemberWorkImportSettingsController::class, 'update']);
     Route::get('works/export', [AdminWorkController::class, 'export']);
     Route::get('works/{work}', [AdminWorkController::class, 'show']);
+    Route::delete('works/{work}', [AdminWorkController::class, 'destroy'])->middleware('security.confirmed');
     Route::get('works/{work}/wipo-connect/outbox', [AdminWipoConnectOutboxController::class, 'indexForWork']);
     Route::post('works/{work}/wipo-connect/outbox', [AdminWipoConnectOutboxController::class, 'enqueueWork'])->middleware('security.confirmed');
     Route::get('institutions/{institution}/wipo-connect/outbox', [AdminWipoConnectOutboxController::class, 'indexForInstitution']);

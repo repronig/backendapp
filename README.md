@@ -18,6 +18,13 @@ List and export endpoints that accept a `search` query parameter use PostgreSQL 
 
 **Phase 1 coverage report:** Contract coverage matrix is documented in **`docs/phase-1-contract-coverage.md`**.
 
+**Member work bulk import:** Approved members can upload CSV batches at `/api/v1/work-import-batches` (web UI at `/member/works/bulk`). Before enabling in production:
+
+1. Run migrations `2026_06_02_140000_extend_import_batches_for_member_works`, `2026_06_02_140100_create_member_work_import_items_table`, and `2026_06_02_150000_add_file_results_json_to_member_work_import_items`.
+2. Run queue workers (`QUEUE_CONNECTION` must not be `sync` in production). Jobs: `ProcessMemberWorkImportPreviewJob`, `ProcessMemberWorkImportDraftsJob`, `ProcessMemberWorkImportFilesJob`, `ProcessMemberWorkImportSubmitReadyJob`, and `SendMemberWorkImportBatchCompletedNotificationJob`.
+3. Optional env vars in **`config/member_work_imports.php`**: `MEMBER_WORK_IMPORT_ENABLED` (hard kill switch; default `true`), `MEMBER_WORK_IMPORT_UPLOADS_PER_HOUR` (default `5`), `MEMBER_WORK_IMPORT_SUBMIT_PER_HOUR` (default `1`). Admins can toggle **`membership.member_work_bulk_import_enabled`** from **Admin → Repertoire** or **Super admin → Platform settings → Membership**. When disabled, routes return **404** and `GET /platform-settings` exposes `features.member_work_bulk_import_enabled: false` for the SPA.
+4. Web SPA: optional `VITE_MEMBER_WORK_BULK_IMPORT_ENABLED=false` hides bulk upload even when the API flag is on.
+
 <p align="center">
 <a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>

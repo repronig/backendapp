@@ -18,4 +18,9 @@ class MemberPolicy
     {
         return false;
     }
+
+    public function delete(User $user, Member $member): bool
+    {
+        return false;
+    }
 }
